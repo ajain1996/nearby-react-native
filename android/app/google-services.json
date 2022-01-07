@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1020540333913",
+    "project_id": "nearby-6b043",
+    "storage_bucket": "nearby-6b043.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020540333913:android:fa7ab2ab1f0be5b0ffe648",
+        "android_client_info": {
+          "package_name": "com.rearbylocate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1020540333913-toll7o3e8n2qbr4fgfbaopce7ef5vkav.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDe-cEjTnkm5tLUz5rojHVXrYTLx5D7q3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1020540333913-toll7o3e8n2qbr4fgfbaopce7ef5vkav.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
