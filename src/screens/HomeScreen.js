@@ -9,6 +9,8 @@ import { windowWidth } from '../components/CustomDropdownComponent';
 import { fetchUsersDataFromAPI } from '../utils/API';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { firebase } from '@react-native-firebase/auth';
 
 export default function HomeScreen({ navigation }) {
     const [tabsBtn, setTabsBtn] = useState("nearbyUsers");
@@ -29,7 +31,7 @@ export default function HomeScreen({ navigation }) {
         });
     }, []);
 
-    console.log("\n\n \n\n usersData: ", usersData);
+    // console.log("\n\n \n\n usersData: ", usersData);
 
     const renderAgeButton = (text, listData) => {
         return (
@@ -227,20 +229,20 @@ const GroceryCardComponent = ({ image, username, info, age, navigation }) => {
 
 export const HeaderComponent = ({ navigation }) => {
     const signOut = async () => {
-        // await AsyncStorage.clear()
-        // navigation.navigate("LoginScreen");
-        try {
-            await GoogleSignin.revokeAccess();
-            await GoogleSignin.signOut();
-            firebase.auth()
-                .signOut()
-                .then(async () => {
-                    navigation.navigate("LoginScreen");
-                    await AsyncStorage.clear();
-                });
-        } catch (error) {
-            console.error(error);
-        }
+        await AsyncStorage.clear()
+        navigation.navigate("LoginScreen");
+        // try {
+        //     await GoogleSignin.revokeAccess();
+        //     await GoogleSignin.signOut();
+        //     firebase.auth()
+        //         .signOut()
+        //         .then(async () => {
+        //             navigation.navigate("LoginScreen");
+        //             await AsyncStorage.clear();
+        //         });
+        // } catch (error) {
+        //     console.error(error);
+        // }
     };
     return (
         <Card style={{ elevation: 8, shadowColor: '#999', backgroundColor: '#fff' }}>

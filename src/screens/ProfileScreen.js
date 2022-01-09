@@ -1,52 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Image } from 'react-native';
 import CustomTextComponent from '../components/CustomTextComponent';
 import { HeaderComponent } from './HomeScreen';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import CustomButtonComponent from '../components/CustomButtonComponent';
+import { getSingleUserDatailFromAPI } from '../utils/API';
+import CustomProgressIndicator from '../components/CustomProgressIndicator';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen({ navigation }) {
 
+    const [loading, setLoading] = useState(false);
+    const [usersData, setUserData] = useState([]);
+
+    useEffect(() => {
+        setLoading(true);
+        // (async () => {
+        //     var userId = await AsyncStorage.getItem("user_id");
+        //     if (userId !== null) {
+        //     }
+        // });
+
+        getSingleUserDatailFromAPI("61d9e5ebd4ea111926dd83bc", (response) => {
+            setLoading(false);
+            if (response !== null) {
+                setUserData(response);
+            }
+        });
+    }, []);
+
+    console.log("\n\n \n\n Single User Data: ", usersData)
+
     return (
-        <View>
-            <ScrollView style={{ height: "84%" }}>
-                <HeaderComponent />
+        loading
+            ? <CustomProgressIndicator />
+            : <View>
+                <ScrollView style={{ height: "84%" }}>
+                    <HeaderComponent />
 
-                <View style={{ marginTop: 10 }} />
-                {renderProfileInfoComponent()}
+                    <View style={{ marginTop: 10 }} />
+                    {renderProfileInfoComponent(usersData)}
 
-                <View style={{ marginTop: 10 }} />
-                <View style={{ elevation: 4, shadowColor: '#999', backgroundColor: '#fff' }}>
-                    <View style={{ width: '100%', paddingHorizontal: 20, paddingVertical: 16 }}>
-                        <CustomTextComponent
-                            text={"About Me"} fw="500"
-                            fs={22} color={"#000"}
-                        />
-                        <View style={{ height: 5 }} />
-                        <CustomTextComponent
-                            text={"It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum. ✌️"} fw="300"
-                            fs={18} color={"#000"} lineHeight={24}
+                    <View style={{ marginTop: 10 }} />
+                    <View style={{ elevation: 4, shadowColor: '#999', backgroundColor: '#fff' }}>
+                        <View style={{ width: '100%', paddingHorizontal: 20, paddingVertical: 16 }}>
+                            <CustomTextComponent
+                                text={"About Me"} fw="500"
+                                fs={22} color={"#000"}
+                            />
+                            <View style={{ height: 5 }} />
+                            <CustomTextComponent
+                                text={"It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum. ✌️"} fw="300"
+                                fs={18} color={"#000"} lineHeight={24}
+                            />
+                        </View>
+                    </View>
+
+                    <View style={{ marginTop: 10 }} />
+                </ScrollView>
+                <View style={{ elevation: 8, shadowColor: '#999', backgroundColor: '#fff' }}>
+                    <View style={{ padding: 16, width: '100%' }}>
+                        <CustomButtonComponent
+                            textColor={"#fff"} bw={0} bgColor={"maroon"} fw="normal"
+                            text="Nearby Users" fs={14} width="100%" height={50} br={8}
+                            bc={"#000"} onPress={() => { navigation.navigate("Tabs") }}
                         />
                     </View>
                 </View>
-
-                <View style={{ marginTop: 10 }} />
-            </ScrollView>
-            <View style={{ elevation: 8, shadowColor: '#999', backgroundColor: '#fff' }}>
-                <View style={{ padding: 16, width: '100%' }}>
-                    <CustomButtonComponent
-                        textColor={"#fff"} bw={0} bgColor={"maroon"} fw="normal"
-                        text="Nearby Users" fs={14} width="100%" height={50} br={8}
-                        bc={"#000"} onPress={() => { navigation.navigate("Tabs") }}
-                    />
-                </View>
             </View>
-        </View>
     )
 }
 
 
-const renderProfileInfoComponent = () => {
+const renderProfileInfoComponent = (usersData) => {
     return (
         <View style={{ elevation: 4, shadowColor: '#999', backgroundColor: '#fff' }}>
             <View style={{ width: '100%', padding: 24 }}>
@@ -71,7 +97,7 @@ const renderProfileInfoComponent = () => {
                     </View>
                     <View>
                         <CustomTextComponent
-                            text={"Meghna"} fw="500"
+                            text={usersData.name} fw="500"
                             fs={25} color={"#000"}
                         />
                         <View style={{ height: 8 }} />

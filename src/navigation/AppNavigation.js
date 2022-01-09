@@ -21,7 +21,7 @@ export default function AppNavigation() {
     const navigation = useNavigation();
 
     useEffect(() => {
-        AsyncStorage.getItem('alreadyLoggedIn').then(value => {
+        AsyncStorage.getItem('id_token').then(value => {
             console.log("\n\n \n\n 000000000000000000000000000000000000000", value)
             if (value === null) {
                 navigation.navigate("LoginScreen")
@@ -29,7 +29,7 @@ export default function AppNavigation() {
                 console.log("\n\n \n\n 11111111111111111111111111111111111111111")
             } else {
                 console.log("\n\n \n\n 22222222222222222222222222222222222222222")
-                navigation.navigate("HomeScreen")
+                navigation.navigate("Tabs")
                 setIsLoginYes(false);
             }
         });

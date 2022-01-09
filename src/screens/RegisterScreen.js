@@ -1,6 +1,6 @@
 import { Card } from 'native-base';
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import CustomInputComponent from '../components/CustomInputComponent';
@@ -12,11 +12,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import { CustomDropdownComponent, windowWidth } from '../components/CustomDropdownComponent';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { signUpUserPostRequestAPI } from '../utils/API';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RegisterScreen({ navigation, route }) {
 
     const [fnameError, setFNameError] = useState(false);
     const [lnameError, setLNameError] = useState(false);
+    const [usernameError, setUsernameError] = useState(false);
     const [professionError, setProfessionError] = useState(false);
     const [aboutMeError, setAboutMeError] = useState(false);
     const [countryError, setCountryError] = useState(false);
@@ -28,6 +30,7 @@ export default function RegisterScreen({ navigation, route }) {
 
     const [fname, setFName] = useState("");
     const [lname, setLName] = useState("");
+    const [username, setUsername] = useState("");
     const [profession, setProfession] = useState("");
     const [aboutMe, setAboutMe] = useState("");
     const [country, setCountry] = useState("");
@@ -83,6 +86,8 @@ export default function RegisterScreen({ navigation, route }) {
             setFNameError(true);
         } if (lname.length === 0) {
             setLNameError(true);
+        } if (username.length === 0) {
+            setUsernameError(true);
         } if (profession.length === 0) {
             setProfessionError(true);
         } if (aboutMe.length === 0) {
@@ -104,19 +109,71 @@ export default function RegisterScreen({ navigation, route }) {
                 route.params.email,
                 route.params.password,
                 fullname,
+                username,
                 age,
                 city,
                 country,
+                aboutMe,
+                gender,
+                state,
+                profession,
                 (response) => {
                     setLoading(false);
-                    if (response !== null) {
-                        console.log(response);
-                    }
+                    console.log('\n\n signUpUserPostRequestAPI appside:', response);
+                    // if (response.success) {
+                    //     // AsyncStorage.setItem("user_id", response);
+                    //     AsyncStorage.setItem("id_token", route.params.password);
+                    //     // AsyncStorage.setItem('alreadyLoggedIn', 'true');
+                    // } else {
+                    //     Alert.alert("", response.msg);
+                    // }
                     navigation.replace("Tabs")
                 },
             );
         }
     }
+
+
+    var dataRes = {
+        "success": true,
+        "msg": "registration successfull",
+        "new_user": {
+            "userName": "ankit1996",
+            "name": "Ankit Jain",
+            "location": {
+                "lat": "85",
+                "long": "25"
+            },
+            "email": "ajain.aj1996@gmail.com",
+            "profession": "Writer",
+            "about_me": "I am a writer",
+            "age": 80,
+            "state": "Madhya Pradesh",
+            "dob": {
+                "month": 12,
+                "year": 2021,
+                "date": 12
+            },
+            "age_group": {
+                "age_12_to_18": false,
+                "age_19_to_32": false,
+                "age_33_to_64": false,
+                "age_65_to_100": true
+            },
+            "city": "Jbp",
+            "country": "India",
+            "gender": "MALE",
+            "password": "$2b$10$VbLuNxM1i8HPd3.w70hU3.XaB6ijoU8Q4HaDfgiR6/2QHSCWDToWC",
+            "send_request": [],
+            "get_request": [],
+            "accepted_request": [],
+            "_id": "61db0ca31eb9c4a8f9bd8f91",
+            "__v": 0
+        }
+    }
+
+
+    console.log('\n\n dataRes: ', dataRes.new_user._id);
 
 
     return (
@@ -185,6 +242,20 @@ export default function RegisterScreen({ navigation, route }) {
                                 onChangeText={(val) => {
                                     setLName(val);
                                     setLNameError(false);
+                                }}
+                            />
+                            {lnameError ? <ErrorBlock text="Please enter your last name" /> : <></>}
+                            <View style={{ height: 20 }} />
+
+
+                            <CustomInputComponent
+                                placeholderText="Username"
+                                iconType={require("../../assets/images/fname.png")}
+                                headingText="Username"
+                                labelValue={username}
+                                onChangeText={(val) => {
+                                    setUsername(val);
+                                    setUsernameError(false);
                                 }}
                             />
                             {lnameError ? <ErrorBlock text="Please enter your last name" /> : <></>}

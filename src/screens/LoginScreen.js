@@ -15,6 +15,8 @@ export default function LoginScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState([]);
 
+    const [confirm, setConfirm] = useState(null);
+
     const loginList = [
         { name: 'Find Nearby People' },
         { name: 'See Who Is\nIntrested In You' },
@@ -49,23 +51,22 @@ export default function LoginScreen({ navigation }) {
             //  this.setState({ userInfo });
             // setLoading(false);
             if (userInfo !== null) {
-                console.log("User details: ", userInfo.idToken, '\n\n', userInfo["user"].idToken);
-                AsyncStorage.setItem('alreadyLoggedIn', 'true');
+                console.log("User details: ", userInfo);
                 loginUserPostRequestAPI(
                     userInfo["user"].email,
                     userInfo.idToken,
-                    (response) => {
+                    async (response) => {
                         setLoading(false);
-                        console.log("\n\n \n\n response: ", response.status === "User does not exist.");
-                        if (response.status.toString() === "User does not exist.") {
+                        console.log("\n\n \n\n responsesss: ", response);
+                        // var isToken = await AsyncStorage.getItem("id_token");
+                        if (response.status === "User does not exist.") {
                             navigation.navigate("RegisterScreen", {
                                 email: userInfo["user"].email,
                                 password: userInfo.idToken,
                             });
-                            // Alert.alert("", response.status);
                         }
-                        else if (response !== null) {
-                            navigation.replace("HomeScreen", {
+                        else {
+                            navigation.replace("Tabs", {
                                 email: userInfo["user"].email,
                                 password: userInfo.idToken,
                             });
