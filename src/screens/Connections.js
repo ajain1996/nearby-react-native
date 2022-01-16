@@ -8,34 +8,42 @@ import {
   Alert,
 } from 'react-native';
 import CustomTextComponent from '../components/CustomTextComponent';
-import {LOGGED_IN_USER_DETAILS} from '../Constants/ASYNC_STORAGE';
+import {BACKEND, LOGGED_IN_USER_DETAILS} from '../Constants/ASYNC_STORAGE';
 import {HeaderComponent} from './HomeScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getSingleUserDatailFromAPI} from '../utils/API';
+import CustomButtonComponent from '../components/CustomButtonComponent';
 import axios from 'axios';
-import {BACKEND} from '../Constants/ASYNC_STORAGE';
-// import {Alert} from 'native-base';
-export default function MessageScreen({navigation, route}) {
+
+export default function MessageScreen({navigation}) {
   const [connections, setConnections] = useState([]);
-  const [currUser, setCurrUser] = useState([]);
+  const [currUserData, setCurrUserData] = useState({});
   useEffect(() => {
     // setLoading(true);
 
     (async () => {
       const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
       const parsed = JSON.parse(currUser);
-      setCurrUser(parsed);
       console.log(parsed._id, '\n\n<<<<<<<<<<<<<<<<<<<<< curr user');
-      const {data} = await axios.get(`${BACKEND}/chat/members/${parsed._id}`);
-      if (data.success) {
-        setConnections(data.chats.chat);
-        Alert.alert('success');
-        console.log(data.chats.chat);
-      }
+      setCurrUserData(parsed);
+      getSingleUserDatailFromAPI(parsed._id, response => {
+        // setLoading(false);
+        if (response !== null) {
+          //   setUserData(response);
+          setConnections(response.get_request);
+          console.log(
+            '\n\n>>> connections',
+            response.accepted_request,
+            '\n\n<<<<<<<<<<<<',
+          );
+        }
+      });
     })();
 
     // setLoading(false);
   }, []);
+  // const a
+
   const renderAdsPlacesBtn = () => {
     return (
       <TouchableOpacity
@@ -136,15 +144,11 @@ export default function MessageScreen({navigation, route}) {
           {connections?.map((item, index) => {
             return (
               <BuildSingleMessageComponent
-                item={item.secondPerson}
+                item={item}
                 index={index}
-                onPress={() => {
-                  navigation.navigate('ChatScreen', {
-                    messageId: item.message,
-                    secondPerson: item.secondPerson,
-                    currUser,
-                  });
-                }}
+                // onPress={() => {
+                //   navigation.navigate('ChatScreen');
+                // }}
               />
             );
           })}
@@ -156,8 +160,35 @@ export default function MessageScreen({navigation, route}) {
 }
 
 const BuildSingleMessageComponent = ({item, index, onPress}) => {
-  console.log('\t\t>> item \t', item, '\n\n');
-
+  const acceptRequest = async otherPersonId => {
+    console.log('called');
+    const asyncData = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
+    const parsed = JSON.parse(asyncData);
+    const {data} = await axios.post(`${BACKEND}/request/acceptrequest`, {
+      curent_user_id: parsed._id,
+      requested_id: otherPersonId,
+    });
+    console.log(
+      '\n\n>>>>>>>>>>>>>>>>>  ACCEPT THE REQUEST--------- \n\n\n ',
+      data,
+      '\n\n\n>>>>>>> Accepted request data',
+    );
+  };
+  const deleteRequest = async otherPersonId => {
+    console.log('called');
+    const asyncData = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
+    const parsed = JSON.parse(asyncData);
+    const {data} = await axios.post(`${BACKEND}/request/deleterequest`, {
+      curent_user_id: parsed._id,
+      requested_id: otherPersonId,
+    });
+    Alert.alert(data.msg);
+    console.log(
+      '\n\n>>>>>>>>>>>>>>>>>  ACCEPT THE REQUEST--------- \n\n\n ',
+      // data,
+      '\n\n\n>>>>>>> Accepted request data',
+    );
+  };
   return (
     <View
       key={index}
@@ -179,48 +210,70 @@ const BuildSingleMessageComponent = ({item, index, onPress}) => {
         }}
         onPress={onPress}>
         <Image
-          source={item?.avatar}
-          style={{width: 80, height: 80, borderRadius: 100}}
+          source={item.avatar}
+          style={{width: 50, height: 50, borderRadius: 100}}
         />
-        <View style={{width: '60%'}}>
+        <View
+          style={{
+            width: '55%',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
           <CustomTextComponent
-            text={item?.userName}
+            text={item.userName}
             fw="600"
             fs={14}
             color={'#000'}
           />
-          {/* <CustomTextComponent
-            text={item?.about_me}
+          <CustomTextComponent
+            text={item.about_me}
             fw="500"
             fs={12}
             color={'#333333'}
-          /> */}
+          />
         </View>
-        <View style={{paddingRight: 10, alignItems: 'center'}}>
+        <TouchableOpacity onPress={() => acceptRequest(item._id)}>
           <View
             style={{
-              width: 25,
-              height: 25,
-              borderRadius: 100,
-              backgroundColor: '#FF7777',
-              justifyContent: 'center',
+              // paddingRight: 10,
+              paddingLeft: 20,
+              paddingRight: 20,
+              paddingTop: 3,
+              paddingBottom: 3,
               alignItems: 'center',
-              marginBottom: 5,
+              borderRadius: 20,
+              backgroundColor: 'green',
             }}>
-            {/* <CustomTextComponent
-              text={item.messageCount}
+            <CustomTextComponent
+              bgColor={'#7fff00'}
+              text={'A'}
               fw="600"
               fs={13}
               color={'#fff'}
-            /> */}
+            />
           </View>
-          {/* <CustomTextComponent
-            text={item.time}
-            fw="600"
-            fs={12}
-            color={'#000'}
-          /> */}
-        </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => deleteRequest(item._id)}>
+          <View
+            style={{
+              // paddingRight: 10,
+              paddingLeft: 20,
+              paddingRight: 20,
+              paddingTop: 3,
+              paddingBottom: 3,
+              alignItems: 'center',
+              borderRadius: 20,
+              backgroundColor: 'red',
+            }}>
+            <CustomTextComponent
+              bgColor={'#7fff00'}
+              text={'F'}
+              fw="600"
+              fs={13}
+              color={'#fff'}
+            />
+          </View>
+        </TouchableOpacity>
       </TouchableOpacity>
     </View>
   );

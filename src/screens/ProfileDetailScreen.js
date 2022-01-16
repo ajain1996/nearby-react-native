@@ -1,143 +1,258 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, Alert } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, ScrollView, Image, Alert} from 'react-native';
 import CustomTextComponent from '../components/CustomTextComponent';
-import { HeaderComponent } from './HomeScreen';
+import {HeaderComponent} from './HomeScreen';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import CustomButtonComponent from '../components/CustomButtonComponent';
-import { getSingleUserDatailFromAPI, sendUserRequestPostRequestAPI } from '../utils/API';
+import {
+  checkSendRequestButtonText,
+  getSingleUserDatailFromAPI,
+  sendUserRequestPostRequestAPI,
+} from '../utils/API';
 import CustomProgressIndicator from '../components/CustomProgressIndicator';
 
-export default function ProfileDetailScreen({ navigation }) {
+export default function ProfileDetailScreen({navigation, route}, props) {
+  const [loading, setLoading] = useState(false);
+  const [usersData, setUserData] = useState({});
+  // const [currUserData, setCurrUserData] = useState({});
+  const {currUserData, otherUserData} = route.params;
+  const [showRequestLoader, setShowRequestLoader] = useState({
+    status: true,
+    text: 'Loading',
+    navigate: null,
+  });
 
-    const [loading, setLoading] = useState(false);
-    const [usersData, setUserData] = useState([]);
+  console.log('>>>>>>>>>>\n\n\n', route, '<<<<<<<  ------- current user data');
+  // console.log(otherUserData, '<<<<<<<  ------- current user data');
+  // console.log(route.params.currUserData._id, '<<<< curr user');
+  useEffect(() => {
+    setLoading(true);
 
-    useEffect(() => {
-        setLoading(true);
-        // (async () => {
-        //     var userId = await AsyncStorage.getItem("user_id");
-        //     if (userId !== null) {
-        //     }
-        // });
+    getSingleUserDatailFromAPI(otherUserData.user_id, response => {
+      setLoading(false);
+      if (response !== null) {
+        // console.log(response, '<<<<<<<<<<<<  respo');
+        setUserData(response);
+        console.log(response, '<<<<<<<<<< this i response from linke 39');
+        // checkRequestButtonText();
+        const {accepted_request, get_request} = response;
 
-        getSingleUserDatailFromAPI("61db0ecc1eb9c4a8f9bd8f96", (response) => {
-            setLoading(false);
-            if (response !== null) {
-                setUserData(response);
-            }
-        });
-    }, []);
+        checkRequestButtonText(accepted_request, get_request);
 
-    console.log("\n\n \n\n Single User Data: ", usersData)
+        // const
+        // checkRequestButtonText
+      }
+    });
+  }, []);
+  const checkRequestButtonText = async (accepted_request, get_request) => {
+    try {
+      // const {accepted_request, get_request} = usersData;
+      const checkGetRequest = get_request.filter(
+        item => item._id == currUserData._id,
+      );
+      // Alert.alert(get_request);
+      const checkAccept = accepted_request.filter(
+        item => item._id == currUserData._id,
+      );
+      console.log(checkAccept, checkGetRequest, 'accept , request');
+      console.log(
+        checkGetRequest,
+        checkAccept,
+        checkGetRequest.length,
+        checkAccept.length,
+        '<<<<<<<<<<<<<<-----------------  check button status',
+      );
 
-    return (
-        loading
-            ? <CustomProgressIndicator />
-            : <View>
-                <ScrollView style={{ height: "90%" }}>
-                    <HeaderComponent />
+      if (!checkGetRequest.length && !checkAccept.length) {
+        setShowRequestLoader({text: 'Send Request', status: false});
+      }
+      if (checkGetRequest.length) {
+        setShowRequestLoader({status: false, text: 'Request Already Sent'});
+      }
+      if (checkAccept.length) {
+        setShowRequestLoader({status: false, text: 'Message'});
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+  // console.log('\n\n \n\n Single User Data: ', usersData);
 
-                    <View style={{ marginTop: 10 }} />
-                    {renderProfileInfoComponent(usersData)}
+  return loading ? (
+    <CustomProgressIndicator />
+  ) : (
+    <View>
+      <ScrollView style={{height: '90%'}}>
+        <HeaderComponent />
 
-                    <View style={{ marginTop: 10 }} />
-                    <View style={{ elevation: 4, shadowColor: '#999', backgroundColor: '#fff' }}>
-                        <View style={{ width: '100%', paddingHorizontal: 20, paddingVertical: 16 }}>
-                            <CustomTextComponent
-                                text={"About Me"} fw="500"
-                                fs={22} color={"#000"}
-                            />
-                            <View style={{ height: 5 }} />
-                            <CustomTextComponent
-                                text={usersData.about_me} fw="300"
-                                fs={18} color={"#000"} lineHeight={24}
-                            />
-                        </View>
-                    </View>
-                    <View style={{ marginTop: 10 }} />
-                </ScrollView>
+        <View style={{marginTop: 10}} />
+        {renderProfileInfoComponent(usersData)}
 
-                <View style={{ elevation: 8, shadowColor: '#999', backgroundColor: '#fff' }}>
-                    <View style={{ padding: 16, width: '100%' }}>
-                        <CustomButtonComponent
-                            textColor={"#fff"} bw={0} bgColor={"maroon"} fw="normal"
-                            text="Send Request" fs={14} width="100%" height={50} br={8}
-                            bc={"#000"} onPress={() => {
-                                setLoading(true);
-                                sendUserRequestPostRequestAPI("sending_id", "requested_id", (response) => {
-                                    console.log('\n\n sendUserRequestPostRequestAPI response: ', response)
-                                    setLoading(false);
-                                    if (response.success) {
-                                        Alert.alert(
-                                            'Submit Successfully', response.msg, [{
-                                                text: 'OK',
-                                                onPress: () => { navigation.goBack() }
-                                            }], { cancelable: false },
-                                        );
-                                    }
-                                });
-                            }}
-                        />
-                    </View>
-                </View>
-            </View>
-    )
-}
-
-
-const renderProfileInfoComponent = (usersData) => {
-    return (
-        <View style={{ elevation: 4, shadowColor: '#999', backgroundColor: '#fff' }}>
-            <View style={{ width: '100%', padding: 24 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}>
-                    <Image
-                        source={require("../../assets/images/age.png")}
-                        style={{ width: 24, height: 24 }}
-                    />
-                    <View style={{ width: 5 }} />
-                    <CustomTextComponent
-                        text={"24 years"} fw="400"
-                        fs={20} color={"#000"}
-                    />
-                </View>
-
-                <View style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
-                    <View style={{ width: 120, height: 120, borderRadius: 100, marginRight: 30 }}>
-                        <Image
-                            source={require("../../assets/images/profile.png")}
-                            style={{ width: "100%", height: '100%' }}
-                        />
-                    </View>
-                    <View>
-                        <CustomTextComponent
-                            text={usersData.name} fw="500"
-                            fs={25} color={"#000"}
-                        />
-                        <View style={{ height: 8 }} />
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Image
-                                source={require("../../assets/images/briefcase.png")}
-                                style={{ width: 20, height: 20, marginRight: 8, tintColor: '#000' }}
-                            />
-                            <CustomTextComponent
-                                text={"Software Engineer"} fw="300"
-                                fs={18} color={"#000"}
-                            />
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 5 }}>
-                            <View style={{ marginLeft: -3 }}>
-                                <EvilIcons name="location" size={28} color={"#000"} />
-                            </View>
-                            <View style={{ marginRight: 4 }} />
-                            <CustomTextComponent
-                                text={"73 miles away"} fw="300"
-                                fs={18} color={"#000"}
-                            />
-                        </View>
-                    </View>
-                </View>
-            </View>
+        <View style={{marginTop: 10}} />
+        <View
+          style={{elevation: 4, shadowColor: '#999', backgroundColor: '#fff'}}>
+          <View
+            style={{width: '100%', paddingHorizontal: 20, paddingVertical: 16}}>
+            <CustomTextComponent
+              text={'About Me'}
+              fw="500"
+              fs={22}
+              color={'#000'}
+            />
+            <View style={{height: 5}} />
+            <CustomTextComponent
+              text={usersData.about_me}
+              fw="300"
+              fs={18}
+              color={'#000'}
+              lineHeight={24}
+            />
+          </View>
         </View>
-    );
+        <View style={{marginTop: 10}} />
+      </ScrollView>
+
+      <View
+        style={{elevation: 8, shadowColor: '#999', backgroundColor: '#fff'}}>
+        <View style={{padding: 16, width: '100%'}}>
+          {/* {showRequestLoader.text=="Message"?} */}
+          <CustomButtonComponent
+            textColor={'#fff'}
+            bw={0}
+            bgColor={'maroon'}
+            fw="normal"
+            text={showRequestLoader.text}
+            fs={14}
+            width="100%"
+            height={50}
+            br={8}
+            bc={'#000'}
+            onPress={() => {
+              {
+                (() => {
+                  if (showRequestLoader.text == 'Message') {
+                    return navigation.navigate('ProfileDetailToMessageScreen', {
+                      messageId: 'FIND_IT',
+                      secondPerson: usersData,
+                      currUser: currUserData,
+                    });
+                  } else if (showRequestLoader.text == 'Send Request') {
+                    setLoading(true);
+
+                    return sendUserRequestPostRequestAPI(
+                      currUserData._id,
+                      otherUserData.user_id,
+                      response => {
+                        if (response.success) {
+                          Alert.alert('Request Sent');
+                          navigation.navigate('HomeScreen');
+                        }
+                        // console.log(
+                        //   '\n\n sendUserRequestPostRequestAPI response: ',
+                        //   response,
+                        // );
+                        setLoading(false);
+                      },
+                    );
+                  }
+                })();
+              }
+            }}
+          />
+        </View>
+      </View>
+    </View>
+  );
 }
 
+const renderProfileInfoComponent = usersData => {
+  return (
+    <View style={{elevation: 4, shadowColor: '#999', backgroundColor: '#fff'}}>
+      <View style={{width: '100%', padding: 24}}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+          }}>
+          <Image
+            source={{uri: usersData.avatar}}
+            style={{width: 24, height: 24}}
+          />
+          <View style={{width: 5}} />
+          <CustomTextComponent
+            text={`${usersData?.age} years`}
+            fw="400"
+            fs={20}
+            color={'#000'}
+          />
+        </View>
+
+        <View
+          style={{
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}>
+          <View
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: 100,
+              marginRight: 30,
+            }}>
+            <Image
+              source={require('../../assets/images/profile.png')}
+              // source={usersData?.avatar}
+              style={{width: '100%', height: '100%'}}
+            />
+          </View>
+          <View>
+            <CustomTextComponent
+              text={usersData.name}
+              fw="500"
+              fs={25}
+              color={'#000'}
+            />
+            <View style={{height: 8}} />
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                // source={require('../../assets/images/briefcase.png')}
+                source={usersData.avatar}
+                style={{
+                  width: 20,
+                  height: 20,
+                  marginRight: 8,
+                  tintColor: '#000',
+                }}
+              />
+              <CustomTextComponent
+                text={usersData?.profession}
+                fw="300"
+                fs={18}
+                color={'#000'}
+              />
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 5,
+              }}>
+              <View style={{marginLeft: -3}}>
+                <EvilIcons name="location" size={28} color={'#000'} />
+              </View>
+              <View style={{marginRight: 4}} />
+              <CustomTextComponent
+                text={'73 miles away'}
+                fw="300"
+                fs={18}
+                color={'#000'}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+};

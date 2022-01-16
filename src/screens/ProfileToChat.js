@@ -19,13 +19,13 @@ import axios from 'axios';
 import CustomButtonComponent from '../components/CustomButtonComponent';
 import {Center} from 'native-base';
 
-const ChatScreen = ({navigation, route}) => {
+const ProfileToChat = ({navigation, route}) => {
   //   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState([]);
   const [userData, setUserData] = useState({});
-  //   const [messageId, setMessageId] = useState(null);
+  const [messageId, setMessageId] = useState(null);
   //   const [currUserData, setcurrUserData] = useState({});
-  const {messageId, currUser, secondPerson} = route.params;
+  const {currUser, secondPerson} = route.params;
   console.log('\t>>>>>>>>>>>\n\n', route.params);
 
   useEffect(() => {
@@ -34,9 +34,22 @@ const ChatScreen = ({navigation, route}) => {
       route.params,
       '\n\n\n >>>>>>>>>>>>>>>>>>',
     );
-    setUserData(route.params.item);
+
+    (async () => {
+      try {
+        const {data} = await axios.get(
+          `${BACKEND}/chat/message_id/${currUser._id}/${secondPerson._id}`,
+        );
+        setMessage(data.messages);
+        setMessageId(data.messageId);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+
+    // setUserData(route.params.item);
     // checkMessageId();
-    fetchMessage();
+    // fetchMessage();
   }, []);
 
   const checkMessageId = () => {
@@ -46,38 +59,18 @@ const ChatScreen = ({navigation, route}) => {
       const findIt = chat.map(item => {
         if (item.secondPerson == userData._id) {
           Alert.alert('find id');
-          setMessageId(item.message);
+          setMessage(item.message);
         }
       });
-
-      //   return findIt;
-      //   Alert.alert(`message ${findIt} 46`);
-      //   //   const findIt = chat.find(item => item.secondPerson == '001');
-      //   if (findIt != undefined) {
-      //     Alert.alert(`message not undefined`);
-      //     Alert.alert('messageid');
-      //     setMessageId(findIt.message);
-      //     return findIt.message;
-      //   } else {
-      //     Alert.alert('undefined 54');
-      //     return null;
-      //   }
     } catch (e) {
       console.log(e);
     }
-
-    // console.log(
-    //   '\n\n>>>>>>>>>> chats>>>\n\n',
-    //   findIt,
-    //   '\n\n<<<<<<<<<<< chat \t\t',
-    //   findIt,
-    // );
   };
 
   const fetchMessage = async () => {
     try {
       //   const msgId = await checkMessageId();
-      //   checkMessageId();
+      // checkMessageId();
       //   Alert.alert(`Fetched id msg ${msgId} 72`);
       if (messageId != null) {
         const {data} = await axios.get(
@@ -103,6 +96,7 @@ const ChatScreen = ({navigation, route}) => {
   };
 
   const onSend = async message => {
+    Alert.alert(messageId);
     try {
       Alert.alert('sending in api');
       const dataToSend = {
@@ -116,11 +110,7 @@ const ChatScreen = ({navigation, route}) => {
         },
       };
       const {data} = await axios.post(`${BACKEND}/message/send`, dataToSend);
-      console.log(
-        '>>>>>>>>\n\n\n',
-        data,
-        '\n\n\n<<<<< after sending dta ato back',
-      );
+      console.log(data, '<<<<<<<<<< MEssge from back');
       Alert.alert(data.msg);
     } catch (e) {
       console.log(e);
@@ -290,7 +280,7 @@ const ChatScreen = ({navigation, route}) => {
           bw={0}
           bgColor={'maroon'}
           fw="normal"
-          text="Send Message"
+          text="Send Message dds"
           fs={14}
           width="100%"
           height={50}
@@ -305,7 +295,7 @@ const ChatScreen = ({navigation, route}) => {
   );
 };
 
-export default ChatScreen;
+export default ProfileToChat;
 
 const styles = StyleSheet.create({
   container: {
