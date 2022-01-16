@@ -53,7 +53,7 @@ export default function LoginScreen({navigation}) {
       loginUserPostRequestAPI(parsed.email, parsed.password, async response => {
         if (response.success) {
           console.log('>>> Login check\n\n\n', response, '\n\n\n<<<<<');
-           AsyncStorage.setItem(JSON.stringify(response.exist_user[0]));
+          AsyncStorage.setItem(JSON.stringify(response.exist_user[0]));
           navigation.replace('Tabs');
         }
       });
