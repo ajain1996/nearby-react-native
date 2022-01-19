@@ -432,27 +432,21 @@ export const HeaderComponent = ({navigation}) => {
   return (
     <Card style={{elevation: 8, shadowColor: '#999', backgroundColor: '#fff'}}>
       <View style={styles.headerContainer}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 6}}>
           <Image
-            source={require('../../assets/images/location.png')}
-            style={{width: 30, height: 30, tintColor: '#037D05'}}
+            source={require('../../assets/images/grocery.jpg')}
+            style={{width: 40, height: 40, tintColor: '#037D05', borderRadius: 25, borderColor: "red", borderWidth: 2}}
           />
-          <View style={{marginLeft: 8}}>
+          <View style={{marginLeft: 15}}>
             <CustomTextComponent
-              text={'Your Location'}
-              fs={16}
+              text={'Nearby'}
+              fs={26}
               fw="700"
-              color={'#000'}
-            />
-            <CustomTextComponent
-              text={'83, Ak Colony, Wardd ...'}
-              fs={17}
-              fw="500"
-              color={'#000'}
+              color={'red'}
             />
           </View>
         </View>
-        <TouchableOpacity onPress={signOut}>
+        <TouchableOpacity onPress={() => navigation.navigate('EditProfileScreen')}>
           <Image
             source={require('../../assets/images/setting.png')}
             style={{width: 38, height: 38, tintColor: '#000'}}

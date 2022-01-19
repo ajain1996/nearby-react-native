@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, ScrollView, Image, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  Alert,
+  TouchableOpacity,
+} from 'react-native';
 import CustomTextComponent from '../components/CustomTextComponent';
 import {HeaderComponent} from './HomeScreen';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -10,6 +17,7 @@ import {
   sendUserRequestPostRequestAPI,
 } from '../utils/API';
 import CustomProgressIndicator from '../components/CustomProgressIndicator';
+import {SIZES} from '../Constants/theme';
 
 export default function ProfileDetailScreen({navigation, route}, props) {
   const [loading, setLoading] = useState(false);
@@ -110,6 +118,75 @@ export default function ProfileDetailScreen({navigation, route}, props) {
           </View>
         </View>
         <View style={{marginTop: 10}} />
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            marginTop: 10,
+          }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#0073ff',
+              paddingVertical: 10,
+              paddingHorizontal: 35,
+              borderRadius: 10,
+            }}>
+            <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
+              Add Friend
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#0073ff',
+              paddingVertical: 10,
+              paddingHorizontal: 35,
+              borderRadius: 10,
+            }}>
+            <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
+              Share Profile
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            marginTop: 45,
+          }}>
+          <Image
+            source={require('../../assets/images/grocery.jpg')}
+            style={{
+              width: SIZES.width / 3.4,
+              height: SIZES.width / 3.4,
+              margin: 3,
+              borderColor: "#000",
+              borderWidth: 2,
+              borderRadius: 10
+            }}
+          />
+          <Image
+            source={require('../../assets/images/grocery.jpg')}
+            style={{
+              width: SIZES.width / 3.4,
+              height: SIZES.width / 3.4,
+              margin: 3,
+              borderColor: "#000",
+              borderWidth: 2,
+              borderRadius: 10
+            }}
+          />
+          <Image
+            source={require('../../assets/images/grocery.jpg')}
+            style={{
+              width: SIZES.width / 3.4,
+              height: SIZES.width / 3.4,
+              margin: 3,
+              borderColor: "#000",
+              borderWidth: 2,
+              borderRadius: 10
+            }}
+          />
+        </View>
       </ScrollView>
 
       <View
@@ -140,8 +217,8 @@ export default function ProfileDetailScreen({navigation, route}, props) {
                     setLoading(true);
 
                     return sendUserRequestPostRequestAPI(
-                      currUserData._id,
-                      otherUserData.user_id,
+                      currUserData?._id,
+                      otherUserData?.user_id,
                       response => {
                         if (response.success) {
                           Alert.alert('Request Sent');

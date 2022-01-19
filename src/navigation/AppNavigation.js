@@ -15,6 +15,7 @@ import ChatScreen from '../screens/ChatScreen';
 import ProfileToChat from '../screens/ProfileToChat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
+import EditProfileScreen from '../screens/EditProfile';
 
 const Stack = createStackNavigator();
 
@@ -80,6 +81,12 @@ export default function AppNavigation() {
       <Stack.Screen
         name="MessageScreen"
         component={MessageScreen}
+        options={{headerShown: false}}
+      />
+
+      <Stack.Screen
+        name="EditProfileScreen"
+        component={EditProfileScreen}
         options={{headerShown: false}}
       />
 
