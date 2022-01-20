@@ -7,6 +7,7 @@ import SearchScreen from "../screens/SearchScreen";
 import MessageScreen from "../screens/MessageScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import { Colors } from "../utils/Colors";
+import SplashScreen from "../screens/SplashScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -44,7 +45,7 @@ const Tabs = () => {
             />
             <Tab.Screen
                 name="SearchScreen"
-                component={SearchScreen}
+                component={SplashScreen}
                 options={{
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (

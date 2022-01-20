@@ -36,7 +36,7 @@ export default function ProfileDetailScreen({navigation, route}, props) {
   useEffect(() => {
     setLoading(true);
 
-    getSingleUserDatailFromAPI(otherUserData.user_id, response => {
+    getSingleUserDatailFromAPI(otherUserData?.user_id, response => {
       setLoading(false);
       if (response !== null) {
         // console.log(response, '<<<<<<<<<<<<  respo');

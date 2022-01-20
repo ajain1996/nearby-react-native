@@ -16,6 +16,7 @@ import ProfileToChat from '../screens/ProfileToChat';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation} from '@react-navigation/native';
 import EditProfileScreen from '../screens/EditProfile';
+import SplashScreen from '../screens/SplashScreen';
 
 const Stack = createStackNavigator();
 
@@ -41,7 +42,7 @@ export default function AppNavigation() {
   console.log('\n\n Current User: ', isLoginYes);
 
   return (
-    <Stack.Navigator initialRouteName={HomeScreen}>
+    <Stack.Navigator initialRouteName={SplashScreen}>
       <Stack.Screen
         name="LoginScreen"
         component={LoginScreen}
@@ -51,6 +52,12 @@ export default function AppNavigation() {
       <Stack.Screen
         name="RegisterScreen"
         component={RegisterScreen}
+        options={{headerShown: false}}
+      />
+
+      <Stack.Screen
+        name="SplashScreen"
+        component={SplashScreen}
         options={{headerShown: false}}
       />
 
