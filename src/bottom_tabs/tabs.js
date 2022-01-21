@@ -45,7 +45,7 @@ const Tabs = () => {
             />
             <Tab.Screen
                 name="SearchScreen"
-                component={SplashScreen}
+                component={SearchScreen}
                 options={{
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (

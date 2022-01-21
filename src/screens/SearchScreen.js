@@ -146,8 +146,8 @@ const BuildSingleMessageComponent = ({item, index, onPress}) => {
         }}
         onPress={onPress}>
         <Image
-        //   source={item.avatar}        
-          source={require('../../assets/images/grocery.jpg')}
+          source={item?.avatar}        
+          // source={require('../../assets/images/grocery.jpg')}
         style={{width: 100, height: 100}}
         />
         <View style={{marginLeft: 15}}>

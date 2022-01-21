@@ -18,6 +18,7 @@ import CustomTextComponent from '../components/CustomTextComponent';
 import axios from 'axios';
 import CustomButtonComponent from '../components/CustomButtonComponent';
 import {Center} from 'native-base';
+import LinearGradient from 'react-native-linear-gradient';
 
 const ChatScreen = ({navigation, route}) => {
   //   const [messages, setMessages] = useState([]);
@@ -188,6 +189,7 @@ const ChatScreen = ({navigation, route}) => {
       <View
         style={{
           height: 52,
+          marginBottom: 15,
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -233,37 +235,94 @@ const ChatScreen = ({navigation, route}) => {
       <View>
         {(() => {
           return message?.map((item, key) => {
-            console.log(item.sender_id, '\t', route.params.currUser._id);
             if (item.sender_id == route.params.currUser._id) {
               return (
-                <View
-                  style={{
-                    backgroundColor: 'green',
-                    // width: '80%',
-                    // alignItems: 'center',
-                  }}>
-                  <CustomTextComponent
-                    text={` Show this in right`}
-                    fw="400"
-                    fs={20}
-                    color={'#000'}
-                  />
+                <View style={{marginHorizontal: 5}}>
+                  <LinearGradient
+                    colors={['#0073ff', '#0022ff']}
+                    style={{
+                      // backgroundColor: 'green',
+                      // width: '80%',
+                      alignSelf: 'flex-end',
+                      paddingHorizontal: 15,
+                      paddingVertical: 5,
+                      paddingVertical: 2,
+                      // borderRadius: 30
+                      borderTopLeftRadius: 15,
+                      borderTopRightRadius: 15,
+                      // borderBottomLeftRadius: 30,
+                    }}>
+                    <CustomTextComponent
+                      text={` Show this in right`}
+                      fw="500"
+                      fs={17}
+                      color={'#f7f7f7'}
+                    />
+                  </LinearGradient>
+                  <View
+                    style={{
+                      alignSelf: 'flex-end',
+                      width: 167.5,
+                      marginBottom: 6,
+                      backgroundColor: 'blue',
+                      marginHorizontal: 0.2,
+                      paddingHorizontal: 4,
+                      paddingBottom: 4,
+                      borderBottomRightRadius: 15,
+                      borderBottomLeftRadius: 15,
+                    }}>
+                    <CustomTextComponent
+                      text={`15 Jan 12:00`}
+                      fw="400"
+                      fs={12}
+                      textAlign="right"
+                      color={'rgba(255,255,255,0.5)'}
+                    />
+                  </View>
                 </View>
               );
             } else {
               return (
-                <View
-                  style={{
-                    backgroundColor: 'green',
-                    width: '20%',
-                    // alignItems: 'center',
-                  }}>
-                  <CustomTextComponent
-                    text={` Show this in left`}
-                    fw="400"
-                    fs={20}
-                    color={'#000'}
-                  />
+                <View style={{marginHorizontal: 5}}>
+                  <LinearGradient
+                    colors={['#fff', 'lightgrey']}
+                    style={{
+                      alignSelf: 'flex-start',
+                      paddingHorizontal: 15,
+                      paddingVertical: 5,
+                      paddingVertical: 2,
+                      // borderRadius: 30
+                      borderTopLeftRadius: 15,
+                      borderTopRightRadius: 15,
+                      // borderBottomLeftRadius: 30,
+                    }}>
+                    <CustomTextComponent
+                      text={` Show this in right`}
+                      fw="500"
+                      fs={17}
+                      color={'#000'}
+                    />
+                  </LinearGradient>
+                  <View
+                    style={{
+                      alignSelf: 'flex-start',
+                      width: 167.5,
+                      marginBottom: 6,
+                      backgroundColor: '#d9d9d9',
+                      marginHorizontal: 0.2,
+                      paddingHorizontal: 4,
+                      paddingBottom: 4,
+                      borderBottomRightRadius: 15,
+                      borderBottomLeftRadius: 15,
+                    }}>
+                    <CustomTextComponent
+                      text={`15 Jan 12:00`}
+                      fw="400"
+                      fs={12}
+                      textAlign="right"
+                      color={'rgba(0,0,0,0.4)'}
+                    />
+                  </View>
                 </View>
               );
             }
@@ -284,7 +343,7 @@ const ChatScreen = ({navigation, route}) => {
         scrollToBottom
         scrollToBottomComponent={scrollToBottomComponent}
       /> */}
-      <TouchableOpacity>
+      <TouchableOpacity style={{marginTop: 25}}>
         <CustomButtonComponent
           textColor={'#fff'}
           bw={0}
