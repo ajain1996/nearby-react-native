@@ -52,6 +52,34 @@ export default function ProfileDetailScreen({navigation, route}, props) {
       }
     });
   }, []);
+
+  const onAddFriendPress = () => {
+    if (showRequestLoader.text == 'Message') {
+      return navigation.navigate('ProfileDetailToMessageScreen', {
+        messageId: 'FIND_IT',
+        secondPerson: usersData,
+        currUser: currUserData,
+      });
+    } else if (showRequestLoader.text == 'Send Request') {
+      setLoading(true);
+
+      return sendUserRequestPostRequestAPI(
+        currUserData?._id,
+        otherUserData?.user_id,
+        response => {
+          if (response.success) {
+            Alert.alert('Request Sent');
+            navigation.navigate('HomeScreen');
+          }
+          // console.log(
+          //   '\n\n sendUserRequestPostRequestAPI response: ',
+          //   response,
+          // );
+          setLoading(false);
+        },
+      );
+    }
+  };
   const checkRequestButtonText = async (accepted_request, get_request) => {
     try {
       // const {accepted_request, get_request} = usersData;
@@ -130,10 +158,23 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               paddingVertical: 10,
               paddingHorizontal: 35,
               borderRadius: 10,
-            }}>
+            }}
+            onPress={onAddFriendPress}>
             <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
-              Add Friend
+              {showRequestLoader.text}
             </Text>
+            {/* <CustomButtonComponent
+              textColor={'#fff'}
+              // bw={0}
+              // bgColor={'maroon'}
+              // fw="normal"
+              text={showRequestLoader.text}
+              fs={14}
+              width="100%"
+              height={50}
+              br={8}
+              // bc={'#000'}
+            /> */}
           </TouchableOpacity>
           <TouchableOpacity
             style={{
@@ -159,9 +200,9 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               width: SIZES.width / 3.4,
               height: SIZES.width / 3.4,
               margin: 3,
-              borderColor: "#000",
+              borderColor: '#000',
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
             }}
           />
           <Image
@@ -170,9 +211,9 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               width: SIZES.width / 3.4,
               height: SIZES.width / 3.4,
               margin: 3,
-              borderColor: "#000",
+              borderColor: '#000',
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
             }}
           />
           <Image
@@ -181,9 +222,9 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               width: SIZES.width / 3.4,
               height: SIZES.width / 3.4,
               margin: 3,
-              borderColor: "#000",
+              borderColor: '#000',
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
             }}
           />
         </View>
@@ -193,49 +234,6 @@ export default function ProfileDetailScreen({navigation, route}, props) {
         style={{elevation: 8, shadowColor: '#999', backgroundColor: '#fff'}}>
         <View style={{padding: 16, width: '100%'}}>
           {/* {showRequestLoader.text=="Message"?} */}
-          <CustomButtonComponent
-            textColor={'#fff'}
-            bw={0}
-            bgColor={'maroon'}
-            fw="normal"
-            text={showRequestLoader.text}
-            fs={14}
-            width="100%"
-            height={50}
-            br={8}
-            bc={'#000'}
-            onPress={() => {
-              {
-                (() => {
-                  if (showRequestLoader.text == 'Message') {
-                    return navigation.navigate('ProfileDetailToMessageScreen', {
-                      messageId: 'FIND_IT',
-                      secondPerson: usersData,
-                      currUser: currUserData,
-                    });
-                  } else if (showRequestLoader.text == 'Send Request') {
-                    setLoading(true);
-
-                    return sendUserRequestPostRequestAPI(
-                      currUserData?._id,
-                      otherUserData?.user_id,
-                      response => {
-                        if (response.success) {
-                          Alert.alert('Request Sent');
-                          navigation.navigate('HomeScreen');
-                        }
-                        // console.log(
-                        //   '\n\n sendUserRequestPostRequestAPI response: ',
-                        //   response,
-                        // );
-                        setLoading(false);
-                      },
-                    );
-                  }
-                })();
-              }
-            }}
-          />
         </View>
       </View>
     </View>
