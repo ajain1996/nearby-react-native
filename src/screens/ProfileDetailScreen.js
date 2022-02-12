@@ -156,34 +156,24 @@ export default function ProfileDetailScreen({navigation, route}, props) {
             style={{
               backgroundColor: '#0073ff',
               paddingVertical: 10,
-              paddingHorizontal: 35,
+              paddingHorizontal: 25,
               borderRadius: 10,
+              width: '45%',
             }}
             onPress={onAddFriendPress}>
-            <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
+            <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>
               {showRequestLoader.text}
             </Text>
-            {/* <CustomButtonComponent
-              textColor={'#fff'}
-              // bw={0}
-              // bgColor={'maroon'}
-              // fw="normal"
-              text={showRequestLoader.text}
-              fs={14}
-              width="100%"
-              height={50}
-              br={8}
-              // bc={'#000'}
-            /> */}
           </TouchableOpacity>
           <TouchableOpacity
             style={{
               backgroundColor: '#0073ff',
               paddingVertical: 10,
-              paddingHorizontal: 35,
+              paddingHorizontal: 25,
               borderRadius: 10,
+              width: '45%',
             }}>
-            <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
+            <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>
               Share Profile
             </Text>
           </TouchableOpacity>
@@ -251,7 +241,7 @@ const renderProfileInfoComponent = usersData => {
             alignItems: 'center',
           }}>
           <Image
-            source={{uri: usersData.avatar}}
+            source={{uri: usersData.image}}
             style={{width: 24, height: 24}}
           />
           <View style={{width: 5}} />
@@ -278,7 +268,7 @@ const renderProfileInfoComponent = usersData => {
             }}>
             <Image
               source={require('../../assets/images/profile.png')}
-              // source={usersData?.avatar}
+              source={{uri: usersData?.image}}
               style={{width: '100%', height: '100%'}}
             />
           </View>

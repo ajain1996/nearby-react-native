@@ -14,19 +14,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getSingleUserDatailFromAPI} from '../utils/API';
 import CustomButtonComponent from '../components/CustomButtonComponent';
 import axios from 'axios';
+import {useSelector, useDispatch} from 'react-redux';
 
 export default function MessageScreen({navigation}) {
   const [connections, setConnections] = useState([]);
   const [currUserData, setCurrUserData] = useState({});
+  const {logged_in_user_details} = useSelector(state => state);
+  const dispatch = useDispatch();
   useEffect(() => {
     // setLoading(true);
-
     (async () => {
-      const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
-      const parsed = JSON.parse(currUser);
-      console.log(parsed._id, '\n\n<<<<<<<<<<<<<<<<<<<<< curr user');
-      setCurrUserData(parsed);
-      getSingleUserDatailFromAPI(parsed._id, response => {
+      //   const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
+      //   const parsed = JSON.parse(currUser);
+      //   console.log(parsed._id, '\n\n<<<<<<<<<<<<<<<<<<<<< curr user');
+      setCurrUserData(logged_in_user_details);
+      getSingleUserDatailFromAPI(logged_in_user_details._id, response => {
         // setLoading(false);
         if (response !== null) {
           //   setUserData(response);
@@ -39,7 +41,6 @@ export default function MessageScreen({navigation}) {
         }
       });
     })();
-
     // setLoading(false);
   }, []);
   // const a
@@ -141,17 +142,27 @@ export default function MessageScreen({navigation}) {
 
           {renderAdsPlacesBtn()}
 
-          {connections?.map((item, index) => {
-            return (
-              <BuildSingleMessageComponent
-                item={item}
-                index={index}
-                // onPress={() => {
-                //   navigation.navigate('ChatScreen');
-                // }}
-              />
-            );
-          })}
+          {connections.length ? (
+            connections?.map((item, index) => {
+              return (
+                <BuildSingleMessageComponent
+                  item={item}
+                  index={index}
+                  // onPress={() => {
+                  //   navigation.navigate('ChatScreen');
+                  // }}
+                />
+              );
+            })
+          ) : (
+            <CustomTextComponent
+              text={'No Pending Requests Found'}
+              fs={18}
+              fw="500"
+              color={'#000'}
+              textAlign="center"
+            />
+          )}
         </View>
         <View style={{height: 130}} />
       </ScrollView>

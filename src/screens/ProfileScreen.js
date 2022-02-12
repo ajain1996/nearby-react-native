@@ -9,24 +9,27 @@ import CustomProgressIndicator from '../components/CustomProgressIndicator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {LOGGED_IN_USER_DETAILS} from '../Constants/ASYNC_STORAGE';
 import {parse} from '@babel/core';
+import {useSelector} from 'react-redux';
 export default function ProfileScreen({navigation}) {
   const [loading, setLoading] = useState(false);
   const [usersData, setUserData] = useState([]);
-
+  const {logged_in_user_details} = useSelector(state => state);
   useEffect(() => {
     setLoading(true);
-    // (async () => {
-    //     var userId = await AsyncStorage.getItem("user_id");
-    //     if (userId !== null) {
-    //     }
-    // });
-    (async () => {
-      const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
-      const parsed = JSON.parse(currUser);
-      console.log(parsed._id, '\n\n<<<<<<<<<<<<<<<<<<<<< curr user');
 
-      getSingleUserDatailFromAPI(parsed._id, response => {
+    (async () => {
+      // const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
+      // const parsed = JSON.parse(currUser);
+      // console.log(parsed._id, '\n\n<<<<<<<<<<<<<<<<<<<<< curr user');
+      console.log(
+        '\n\n\n------\n\n\n',
+        logged_in_user_details,
+        '\n\n------------------\n',
+      );
+
+      getSingleUserDatailFromAPI(logged_in_user_details._id, response => {
         setLoading(false);
+        console.log('\n\n\n------\n\n\n', response, '\n\n------------------\n');
         if (response !== null) {
           setUserData(response);
         }
@@ -43,7 +46,7 @@ export default function ProfileScreen({navigation}) {
   ) : (
     <View>
       <ScrollView style={{height: '84%'}}>
-        <HeaderComponent />
+        <HeaderComponent navigation={navigation} />
 
         <View style={{marginTop: 10}} />
         {renderProfileInfoComponent(usersData)}
@@ -72,13 +75,37 @@ export default function ProfileScreen({navigation}) {
             />
           </View>
         </View>
-
+        
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-evenly',
+            marginTop: 45,
+          }}>
+             {usersData?.cover_images?.map((item, key) => {
+                  return (
+                    <Image
+                      // source={require('../../assets/images/grocery.jpg')}
+                      source={{uri: item}}
+                      key={key}
+                      style={{
+                        width: 100,
+                        height: 100,
+                        margin: 3,
+                        borderColor: '#000',
+                        borderWidth: 2,
+                        borderRadius: 10,
+                      }}
+                    />
+                  );
+                })}
+          
+        </View>
         <View style={{marginTop: 10}} />
       </ScrollView>
       <View
         style={{elevation: 8, shadowColor: '#999', backgroundColor: '#fff'}}>
         <View style={{padding: 16, width: '100%'}}>
-          
           <CustomButtonComponent
             textColor={'#fff'}
             bw={0}
@@ -103,15 +130,17 @@ export default function ProfileScreen({navigation}) {
 const renderProfileInfoComponent = usersData => {
   return (
     <View style={{elevation: 4, shadowColor: '#999', backgroundColor: '#fff'}}>
-      <View style={{width: '100%', padding: 24}}>
+      <View style={{width: '100%', padding: 24, borderWidth: 6}}>
         <View
           style={{
             flexDirection: 'row',
             justifyContent: 'flex-end',
             alignItems: 'center',
+            borderWidth: 5,
           }}>
           <Image
-            source={require('../../assets/images/age.png')}
+            // source={require('../../assets/images/age.png')}
+            source={{uri: usersData.image}}
             style={{width: 24, height: 24}}
           />
           <View style={{width: 5}} />

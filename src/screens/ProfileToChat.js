@@ -94,10 +94,19 @@ const ProfileToChat = ({navigation, route}) => {
       console.log(e);
     }
   };
-
+  // socket.on('messageFromOne', data => {
+  //   // setChatMessage([...ChatMessage, data.message]);
+  //   console.log(data, '<<<< data form message from one');
+  // });
   const onSend = async message => {
     Alert.alert(messageId);
+
     try {
+      socket.emit('OneToOneChat', {
+        messageId,
+        message,
+      });
+
       Alert.alert('sending in api');
       const dataToSend = {
         firstPerson: route.params.currUser._id,

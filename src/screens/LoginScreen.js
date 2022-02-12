@@ -20,8 +20,10 @@ import {loginUserPostRequestAPI} from '../utils/API';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   CHECK_LOGGED_IN_VALUE,
-  LOGGED_IN_USER_DETAILS,
+  ASYNC_LOGGED_IN_USER_DETAILS,
 } from '../Constants/ASYNC_STORAGE';
+import {useDispatch} from 'react-redux';
+import {IS_USER_LOGGED_IN, LOGGED_IN_USER_DETAIL} from '../Reducer/Action';
 
 export default function LoginScreen({navigation}) {
   const [loggedIn, setloggedIn] = useState(false);
@@ -30,7 +32,7 @@ export default function LoginScreen({navigation}) {
   const [user, setUser] = useState([]);
 
   const [confirm, setConfirm] = useState(null);
-
+  const dispatch = useDispatch();
   const loginList = [
     {name: 'Find Nearby People'},
     {name: 'See Who Is\nIntrested In You'},
@@ -40,7 +42,7 @@ export default function LoginScreen({navigation}) {
 
   function onAuthStateChanged(user) {
     setUser(user);
-    console.log('\n\n setUser: ', user);
+    // console.log('\n\n setUser: ', user);
     if (user) {
       setloggedIn(true);
     }
@@ -48,12 +50,17 @@ export default function LoginScreen({navigation}) {
 
   const checkAysnValue = async () => {
     try {
-      const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
+      const currUser = await AsyncStorage.getItem(ASYNC_LOGGED_IN_USER_DETAILS);
       const parsed = JSON.parse(currUser);
       loginUserPostRequestAPI(parsed.email, parsed.password, async response => {
         if (response.success) {
-          console.log('>>> Login check\n\n\n', response, '\n\n\n<<<<<');
+          // console.log('>>> Login check\n\n\n', response, '\n\n\n<<<<<');
           AsyncStorage.setItem(JSON.stringify(response.exist_user[0]));
+          dispatch({
+            type: LOGGED_IN_USER_DETAIL,
+            payload: response.exist_user[0],
+          });
+
           navigation.replace('Tabs');
         }
       });
@@ -95,7 +102,7 @@ export default function LoginScreen({navigation}) {
       //  this.setState({ userInfo });
       // setLoading(false);
       if (userInfo !== null) {
-        console.log('User details: ', userInfo);
+        // console.log('User details: ', userInfo);
         const dataToSend = {
           email: userInfo['user'].email,
           lastName: userInfo['user'].familyName,
@@ -108,7 +115,7 @@ export default function LoginScreen({navigation}) {
           dataToSend.password,
           async response => {
             setLoading(false);
-            console.log('\n\n \n\n responsesss: ', response);
+            // console.log('\n\n \n\n responsesss: ', response);
             // var isToken = await AsyncStorage.getItem("id_token");
 
             if (!response.success) {
@@ -117,11 +124,15 @@ export default function LoginScreen({navigation}) {
               });
             } else {
               AsyncStorage.setItem('CHECK_LOGGED_IN_VALUE', 'true');
+              dispatch({type: IS_USER_LOGGED_IN, payload: true});
               AsyncStorage.setItem(
                 'LOGGED_IN_USER_DETAILS',
                 JSON.stringify(response.exist_user[0]),
               );
-
+              dispatch({
+                type: LOGGED_IN_USER_DETAIL,
+                payload: response.exist_user[0],
+              });
               navigation.replace('Tabs', {
                 dataToSend,
               });

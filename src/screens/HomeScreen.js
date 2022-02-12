@@ -10,12 +10,15 @@ import {
 } from 'react-native';
 import {ActivityIndicator, Card} from 'react-native-paper';
 import CustomButtonComponent from '../components/CustomButtonComponent';
+import Geolocation from '@react-native-community/geolocation';
 import CustomTextComponent from '../components/CustomTextComponent';
 import {SIZES} from '../Constants/theme';
 import SelectDropdown from 'react-native-select-dropdown';
 import {windowWidth} from '../components/CustomDropdownComponent';
 // import Geolocation from 'react-native-community/geolocation';
 import {
+  fetchAllUSersWithLocation,
+  fetchNearByUsers,
   fetchsersByAgeGroup,
   fetchUserbyGender,
   fetchUsersByAgeAndGender,
@@ -26,6 +29,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {firebase} from '@react-native-firebase/auth';
 import {LOGGED_IN_USER_DETAILS} from '../Constants/ASYNC_STORAGE';
+import axios from 'axios';
+import {useSelector} from 'react-redux';
 
 export default function HomeScreen({navigation}) {
   const [tabsBtn, setTabsBtn] = useState('nearbyUsers');
@@ -36,26 +41,98 @@ export default function HomeScreen({navigation}) {
 
   const [loading, setLoading] = useState(false);
   const [usersData, setUsersData] = useState([]);
+  const [nearByUsers, setNearByUsers] = useState([]);
+  const [tempNearByUsers, setTempNearByUsers] = useState([]);
+  const [tempuserData, setTempuserData] = useState([]);
   const refRBSheet = useRef();
   const [currUserData, setCurrUserData] = useState({});
+  const [showNearBy, setShowNearBy] = useState(true);
+  const {logged_in_user_details} = useSelector(state => state);
+  const [userCurrLocation, setUserCurrLocation] = useState({
+    lat: null,
+    lon: null,
+  });
 
-  const getCurrUser = async () => {
-    const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
-    setCurrUserData(JSON.parse(currUser));
+  const getNearByLocation = async () => {
+    Geolocation.getCurrentPosition(info => {
+      // console.log('\n\n\n\n\n\n\n\n', info.coords);
+      const {longitude, latitude} = info.coords;
+      setUserCurrLocation({lat: latitude, lon: longitude});
+      fetchNearByUsers(
+        logged_in_user_details._id,
+        longitude,
+        latitude,
+        20,
+        response => {
+          console.log(
+            '\n\n\n\n\n------------ ',
+            response,
+            '\n\n\n\n\n------------ near by respnse in home page',
+          );
+          setNearByUsers({ALL: response.splice(1), TEMP: response.splice(1)});
+          // setTempNearByUsers(response.splice(1));
+          // setNearByUsers(response);
+        },
+      );
+      fetchAllUSersWithLocation(
+        logged_in_user_details._id,
+        longitude,
+        latitude,
+        20,
+        response => {
+          console.log(
+            '\n\n\n\n\n------------ ',
+            response,
+            '\n\n\n\n\n------------All user sresponse n home page',
+          );
+          setUsersData(response.splice(1));
+          setTempuserData(response.splice(1));
+          // setNearByUsers(response);
+        },
+      );
+
+      // const users=await axios.get(`${BACKEND}`)
+    });
   };
   useEffect(() => {
-    getCurrUser();
-    fetchAllUsers();
+    // getCurrUser();
+    getNearByLocation();
+    setCurrUserData(logged_in_user_details);
+    // fetchAllUsersExceptCurr();
+
+    // fetchAllUsersData();
   }, []);
-  const fetchAllUsers = () => {
+  const fetchAllUsersExceptCurr = () => {
     setLoading(true);
-    fetchUsersDataFromAPI(response => {
+    fetchUsersDataFromAPI(logged_in_user_details._id, response => {
       setLoading(false);
       if (response !== null) {
         setUsersData(response);
       }
     });
   };
+
+  const filterNearBy = age => {
+    const getFilter = nearByUsers.filter((user = user.age == age));
+  };
+
+  const fetchAllUsersData = () => {
+    setLoading(true);
+    const {lon, lat} = userCurrLocation;
+    fetchNearByUsers(logged_in_user_details._id, lon, lat, 200, response => {
+      console.log(
+        '\n\n\n\n\n------------ ',
+        response,
+        '\n\n\n\n\n------------ near by respnse in home page',
+      );
+      setUsersData(response.splice(1));
+      setLoading(false);
+      // setNearByUsers(response);
+    });
+    setLoading(false);
+    // const users=await axios.get(`${BACKEND}`)
+  };
+
   const fetchByGender = gender => {
     setLoading(true);
     fetchUserbyGender(gender, response => {
@@ -75,13 +152,24 @@ export default function HomeScreen({navigation}) {
     });
   };
   const filterDataWithGenderAndAge = (gender, from, to) => {
-    setLoading(true);
-    fetchUsersByAgeAndGender(gender, from, to, response => {
-      setLoading(false);
-      if (response !== null) {
-        setUsersData(response);
-      }
-    });
+    if (gender == 'MALE' || gender == 'FEMALE') {
+      const filterIt = nearByUsers.ALL.filter(
+        item => item.gender == gender && from <= item.age >= to,
+      );
+      console.log(filterIt);
+      setNearByUsers({...nearByUsers, TEMP: filterIt});
+    } else {
+      const filterIt = nearByUsers.ALL.filter(item => from <= item.age >= to);
+      setNearByUsers({...nearByUsers, TEMP: filterIt});
+    }
+    // Alert.alert(`${gender}---${from}--${to}`);
+    // setLoading(true);
+    // fetchUsersByAgeAndGender(gender, from, to, response => {
+    //   setLoading(false);
+    //   if (response !== null) {
+    //     setUsersData(response);
+    //   }
+    // });
   };
   // console.log("\n\n \n\n usersData: ", usersData);
 
@@ -108,12 +196,17 @@ export default function HomeScreen({navigation}) {
           color: '#000',
         }}
         onSelect={(selectedItem, index) => {
-          console.log(selectedItem, index, '<<<<');
+          // console.log(selectedItem, index, '<<<<');
           if (listData.length <= 3) {
             // Alert.alert('length greater than 2');
-            AsyncStorage.setItem('GENDER', selectedItem);
+            // AsyncStorage.setItem('GENDER', selectedItem);
             setselectedGender(selectedItem);
-            fetchByGender(selectedItem);
+            // fetchByGender(selectedItem);
+            filterDataWithGenderAndAge(
+              selectedItem,
+              ageValue.from,
+              ageValue.to,
+            ); ///////////////
           } else {
             if (index == 0) {
               // fetchByAge(12, 18);
@@ -216,6 +309,7 @@ export default function HomeScreen({navigation}) {
               bblr={8}
               onPress={() => {
                 setTabsBtn('nearbyUsers');
+                setShowNearBy(true);
               }}
             />
             <CustomButtonComponent
@@ -232,6 +326,7 @@ export default function HomeScreen({navigation}) {
               btrr={8}
               onPress={() => {
                 setTabsBtn('allUsers');
+                setShowNearBy(false);
               }}
             />
           </View>
@@ -296,24 +391,47 @@ export default function HomeScreen({navigation}) {
             </View>
           ) : (
             <View style={{width: '100%'}}>
-              {usersData.map((data, index) => {
-                return (
-                  <View
-                    key={index}
-                    style={{width: '100%', height: 145, marginTop: 8}}>
-                    <GroceryCardComponent
-                      profession={data.profession}
-                      navigation={navigation}
-                      user_id={data._id}
-                      // image=""
-                      currUserData={currUserData}
-                      username={data.name}
-                      age={data.age}
-                      // age="52"
-                    />
-                  </View>
-                );
-              })}
+              {showNearBy
+                ? nearByUsers?.TEMP?.map((data, index) => {
+                    return (
+                      <View
+                        key={index}
+                        style={{width: '100%', height: 145, marginTop: 8}}>
+                        <GroceryCardComponent
+                          profession={data.profession}
+                          navigation={navigation}
+                          image={data.image}
+                          user_id={data._id}
+                          distance={data?.dist?.calculated}
+                          // image=""
+                          currUserData={logged_in_user_details}
+                          username={data.name}
+                          age={data.age}
+                          // age="52"
+                        />
+                      </View>
+                    );
+                  })
+                : tempuserData.map((data, index) => {
+                    return (
+                      <View
+                        key={index}
+                        style={{width: '100%', height: 145, marginTop: 8}}>
+                        <GroceryCardComponent
+                          profession={data.profession}
+                          navigation={navigation}
+                          user_id={data._id}
+                          distance={data?.dist?.calculated}
+                          image={data.image}
+                          // image=""
+                          currUserData={logged_in_user_details}
+                          username={data.name}
+                          age={data.age}
+                          // age="52"
+                        />
+                      </View>
+                    );
+                  })}
             </View>
           )}
         </View>
@@ -324,16 +442,20 @@ export default function HomeScreen({navigation}) {
 }
 
 const GroceryCardComponent = ({
-  image,
-  username,
-  info,
   profession,
-  age,
   navigation,
-  currUserData,
-
+  image,
   user_id,
+  currUserData,
+  distance,
+  username,
+  age,
+  info,
 }) => {
+  const convertDistToKm =
+    distance > 1000
+      ? `${parseFloat(distance / 1000).toFixed(2)} Km away`
+      : `${parseFloat(distance).toFixed(2)} m away`;
   return (
     <Card
       style={{
@@ -346,14 +468,16 @@ const GroceryCardComponent = ({
       <TouchableOpacity
         style={{flexDirection: 'row', padding: 5}}
         activeOpacity={0.9}
-        onPress={() => {
-          navigation.navigate('ProfileDetailScreen', {
-            currentUser: false,
-            passingThis: {hello: 'hii'},
-          });
-        }}>
+        // onPress={() => {
+        //   navigation.navigate('ProfileDetailScreen', {
+        //     currentUser: false,
+        //     passingThis: {hello: 'hii'},
+        //   });
+        // }}
+      >
         <Image
-          source={require('../../assets/images/grocery.jpg')}
+          // source={require('../../assets/images/grocery.jpg')}
+          source={{uri: image}}
           style={{
             width: SIZES.width / 3.3,
             height: SIZES.width / 3.3,
@@ -381,7 +505,7 @@ const GroceryCardComponent = ({
               color={'#000'}
             />
             <CustomTextComponent
-              text={'Distance: 0 KM away'}
+              text={`Distance: ${convertDistToKm}`}
               fw="600"
               fs={14}
               color={'#000'}
@@ -401,7 +525,7 @@ const GroceryCardComponent = ({
               navigation.navigate('ProfileDetailScreen', {
                 currentUser: false,
                 otherUserData: {user_id},
-                currUserData,
+                currUserData: currUserData,
               });
             }}
           />
@@ -413,8 +537,9 @@ const GroceryCardComponent = ({
 };
 
 export const HeaderComponent = ({navigation}) => {
+  const {logged_in_user_details} = useSelector(state => state);
   const signOut = async () => {
-    await AsyncStorage.clear();
+    // await AsyncStorage.clear();
     navigation.navigate('LoginScreen');
     // try {
     //     await GoogleSignin.revokeAccess();
@@ -432,10 +557,19 @@ export const HeaderComponent = ({navigation}) => {
   return (
     <Card style={{elevation: 8, shadowColor: '#999', backgroundColor: '#fff'}}>
       <View style={styles.headerContainer}>
-        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 6}}>
+        <View
+          style={{flexDirection: 'row', alignItems: 'center', marginTop: 6}}>
           <Image
-            source={require('../../assets/images/grocery.jpg')}
-            style={{width: 40, height: 40, tintColor: '#037D05', borderRadius: 25, borderColor: "red", borderWidth: 2}}
+            // source={require('../../assets/images/grocery.jpg')}
+            source={{uri: logged_in_user_details?.image}}
+            style={{
+              width: 50,
+              height: 50,
+              // tintColor: '#037D05',
+              borderRadius: 25,
+              borderColor: 'red',
+              borderWidth: 2,
+            }}
           />
           <View style={{marginLeft: 15}}>
             <CustomTextComponent
@@ -446,7 +580,10 @@ export const HeaderComponent = ({navigation}) => {
             />
           </View>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate('EditProfileScreen')}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditProfileScreen', {navigation: navigation})
+          }>
           <Image
             source={require('../../assets/images/setting.png')}
             style={{width: 38, height: 38, tintColor: '#000'}}
