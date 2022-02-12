@@ -63,22 +63,28 @@ export default function HomeScreen({navigation}) {
         longitude,
         latitude,
         20,
+        'ALL',
+        0,
+        100,
         response => {
           console.log(
             '\n\n\n\n\n------------ ',
             response,
             '\n\n\n\n\n------------ near by respnse in home page',
           );
-          setNearByUsers({ALL: response.splice(1), TEMP: response.splice(1)});
+          setNearByUsers(response.splice(1));
           // setTempNearByUsers(response.splice(1));
           // setNearByUsers(response);
         },
       );
-      fetchAllUSersWithLocation(
+      fetchNearByUsers(
         logged_in_user_details._id,
         longitude,
         latitude,
-        20,
+        100,
+        'ALL',
+        0,
+        100,
         response => {
           console.log(
             '\n\n\n\n\n------------ ',
@@ -86,7 +92,8 @@ export default function HomeScreen({navigation}) {
             '\n\n\n\n\n------------All user sresponse n home page',
           );
           setUsersData(response.splice(1));
-          setTempuserData(response.splice(1));
+          // setTempuserData(response.splice(1));
+          alert(response.length);
           // setNearByUsers(response);
         },
       );
@@ -152,16 +159,37 @@ export default function HomeScreen({navigation}) {
     });
   };
   const filterDataWithGenderAndAge = (gender, from, to) => {
-    if (gender == 'MALE' || gender == 'FEMALE') {
-      const filterIt = nearByUsers.ALL.filter(
-        item => item.gender == gender && from <= item.age >= to,
-      );
-      console.log(filterIt);
-      setNearByUsers({...nearByUsers, TEMP: filterIt});
-    } else {
-      const filterIt = nearByUsers.ALL.filter(item => from <= item.age >= to);
-      setNearByUsers({...nearByUsers, TEMP: filterIt});
-    }
+    const {lon, lat} = userCurrLocation;
+    fetchNearByUsers(
+      logged_in_user_details._id,
+      lon,
+      lat,
+      50,
+      gender,
+      from,
+      to,
+      response => {
+        console.log(
+          '\n\n\n\n\n------------ ',
+          response,
+          '\n\n\n\n\n------------ near by respnse in home page',
+        );
+        setNearByUsers(response.splice(1));
+        // setTempNearByUsers(response.splice(1));
+        // setNearByUsers(response);
+      },
+    );
+
+    // if (gender == 'MALE' || gender == 'FEMALE') {
+    //   const filterIt = nearByUsers.ALL.filter(
+    //     item => item.gender == gender && from <= item.age >= to,
+    //   );
+    //   console.log(filterIt);
+    //   // setNearByUsers({...nearByUsers, TEMP: filterIt});
+    // } else {
+    //   const filterIt = nearByUsers.ALL.filter(item => from <= item.age >= to);
+    //   setNearByUsers({...nearByUsers, TEMP: filterIt});
+    // }
     // Alert.alert(`${gender}---${from}--${to}`);
     // setLoading(true);
     // fetchUsersByAgeAndGender(gender, from, to, response => {
@@ -391,8 +419,9 @@ export default function HomeScreen({navigation}) {
             </View>
           ) : (
             <View style={{width: '100%'}}>
-              {showNearBy
-                ? nearByUsers?.TEMP?.map((data, index) => {
+              {showNearBy ? (
+                nearByUsers.length ? (
+                  nearByUsers?.map((data, index) => {
                     return (
                       <View
                         key={index}
@@ -412,26 +441,43 @@ export default function HomeScreen({navigation}) {
                       </View>
                     );
                   })
-                : tempuserData.map((data, index) => {
-                    return (
-                      <View
-                        key={index}
-                        style={{width: '100%', height: 145, marginTop: 8}}>
-                        <GroceryCardComponent
-                          profession={data.profession}
-                          navigation={navigation}
-                          user_id={data._id}
-                          distance={data?.dist?.calculated}
-                          image={data.image}
-                          // image=""
-                          currUserData={logged_in_user_details}
-                          username={data.name}
-                          age={data.age}
-                          // age="52"
-                        />
-                      </View>
-                    );
-                  })}
+                ) : (
+                  <CustomTextComponent
+                    text={'No User'}
+                    fw="600"
+                    fs={21}
+                    color={'#30A04A'}
+                  />
+                )
+              ) : usersData.length ? (
+                usersData.map((data, index) => {
+                  return (
+                    <View
+                      key={index}
+                      style={{width: '100%', height: 145, marginTop: 8}}>
+                      <GroceryCardComponent
+                        profession={data.profession}
+                        navigation={navigation}
+                        user_id={data._id}
+                        distance={data?.dist?.calculated}
+                        image={data.image}
+                        // image=""
+                        currUserData={logged_in_user_details}
+                        username={data.name}
+                        age={data.age}
+                        // age="52"
+                      />
+                    </View>
+                  );
+                })
+              ) : (
+                <CustomTextComponent
+                  text={'No User'}
+                  fw="600"
+                  fs={21}
+                  color={'#30A04A'}
+                />
+              )}
             </View>
           )}
         </View>

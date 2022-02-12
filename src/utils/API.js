@@ -118,14 +118,14 @@ export const fetchNearByUsers = async (
 ) => {
   try {
     Alert.alert('called');
-    // console.log(
-    //   `Sending====>>>>>>>>>>> ${BACKEND}/user/location/${user_id}/${log}/${lat}/${quantity}`,
-    // );
+    console.log(
+      `\n\n\n\n ${BACKEND}/user/filter/location/${user_id}/${log}/${lat}/${quantity}/${gender}/${from}/${to}`,
+    );
     // const {data} = await axios.get(
     //   `${BACKEND}/user/location/${user_id}/${log}/${lat}/${quantity}`,
     // );
     const {data} = await axios.get(
-      `${BACKEND}/user/filter/location/${user_id}/${log}/${lat}/${quantity}/${gender}/${from}/${to}}`,
+      `${BACKEND}/user/filter/location/${user_id}/${log}/${lat}/${quantity}/${gender}/${from}/${to}`,
     );
     successCallBack(data.data);
     // console.log(
