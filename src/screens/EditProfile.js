@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import {LOGGED_IN_USER_DETAIL} from '../Reducer/Action';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import CustomInputComponent from '../components/CustomInputComponent';
@@ -23,10 +24,12 @@ import {
   windowWidth,
 } from '../components/CustomDropdownComponent';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import {signUpUserPostRequestAPI} from '../utils/API';
+import {signUpUserPostRequestAPI, updateUser} from '../utils/API';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {BACKEND} from '../Constants/ASYNC_STORAGE';
+import {useSelector, useDispatch} from 'react-redux';
 export default function EditProfileScreen({navigation}) {
   // const {dataToSend}=route.params
   const [dataToSend, setDataToSend] = useState({});
@@ -34,6 +37,7 @@ export default function EditProfileScreen({navigation}) {
   const [fnameError, setFNameError] = useState(false);
   const [lnameError, setLNameError] = useState(false);
   const [usernameError, setUsernameError] = useState(false);
+
   const [professionError, setProfessionError] = useState(false);
   const [aboutMeError, setAboutMeError] = useState(false);
   const [countryError, setCountryError] = useState(false);
@@ -54,6 +58,7 @@ export default function EditProfileScreen({navigation}) {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
   const [dob, setDob] = useState('');
+  const [userImage, setuserImage] = useState('');
 
   const [date, setDate] = useState(new Date(1598051730000));
   const [showDatePicker, setShowdatePicker] = useState(false);
@@ -70,6 +75,8 @@ export default function EditProfileScreen({navigation}) {
 
   const ageGroupList = ['12 to 18', '19 to 32', '33 to 64', '65 to 80'];
 
+  const {logged_in_user_details} = useSelector(state => state);
+  const dispatch = useDispatch();
   const yourProfessionList = [
     'Profession 1',
     'Profession 2',
@@ -84,10 +91,13 @@ export default function EditProfileScreen({navigation}) {
 
   const stateList = ['MP', 'UP', 'Delhi', 'Uttrakhand', 'Indiana'];
 
-//   useEffect(() => {
-//     setDataToSend(route.params.dataToSend);
-//   }, []);
-
+  useEffect(() => {
+    setDataToSend(logged_in_user_details);
+    console.log(logged_in_user_details, '<<<<  logged in user details');
+  }, []);
+  const changeState = (name, value) => {
+    setDataToSend({...dataToSend, [name]: value});
+  };
   const renderdatePicker = () => {
     if (showDatePicker) {
       return (
@@ -104,10 +114,12 @@ export default function EditProfileScreen({navigation}) {
     }
   };
 
-  const handleClick = () => {
-    var fullname = fname + ' ' + lname;
-    var email = dataToSend.email;
-    var password = dataToSend.password;
+  const upDateProfile = () => {
+    console.log(
+      '\n\n\n\n\n\n',
+      dataToSend,
+      '<<<<\n\n this is dat ato send on click\n\n\n\n',
+    );
     // console.log(
     //   email.trim(),
     //   password,
@@ -121,121 +133,80 @@ export default function EditProfileScreen({navigation}) {
     //   state,
     //   profession,
     // )
-    setLoading(true);
-    const signup = async () => {
-      try {
-        const bodyData = {
-          email: dataToSend.email,
-          userName: username,
-          password: dataToSend.password,
-          name: `${dataToSend.firstName} ${dataToSend.lastName}`,
-          age: age,
-          city: city,
-          profession: profession,
-          country: country,
-          location: {lat: '23.233623', long: '79.961582'},
+    // setLoading(true);
+    updateUser(dataToSend, response => {
+      console.log(
+        '\n\n\n\n\n\n Responseof update user from backend \t\n\n',
+        response,
+        '\n\n\n\n\n',
+      );
+      if (response.success) {
+        setDataToSend(response.updated_user);
 
-          about_me: aboutMe,
-          gender: gender,
-          state: state,
-          dob: {month: 12, year: 2021, date: 12},
-        };
-        const {data} = await axios.post(`${BACKEND}/auth/signup`, bodyData);
-        console.log(
-          '\n\n>>>>>>>>>>> Data signup>>>>>>>>>>',
-          data,
-          '\n\n<<<<<<<<<<<<',
-        );
-        if (data['success']) {
-          Alert.alert(data.msg);
-          // Alert.alert('Check Input fields');
-          AsyncStorage.setItem('CHECK_LOGGED_IN_VALUE', 'true');
-          AsyncStorage.setItem(
-            'LOGGED_IN_USER_DETAILS',
-            JSON.stringify(data.new_user),
-          );
-          navigation.replace('Tabs');
-        } else {
-          Alert.alert('Check Input Fields');
-          AsyncStorage.setItem('CHECK_LOGGED_IN_VALUE', 'false');
-          AsyncStorage.setItem('LOGGED_IN_USER_DETAILS', 'null');
-        }
-      } catch (e) {
-        console.log(e);
+        dispatch({type: LOGGED_IN_USER_DETAIL, payload: response.updated_user});
+        Alert.alert('Profile Successfully Updated');
+      } else {
+        Alert.alert('Error While Updating Profile');
       }
-    };
-    signup();
-    // signUpUserPostRequestAPI(
-    //   email.trim(),
-    //   password,
-    //   fullname,
-    //   username,
-    //   age,
-    //   city,
-    //   country,
-    //   aboutMe,
-    //   gender,
-    //   state,
-    //   profession,
-    //   response => {
-    //     setLoading(false);
-    //     console.log('\n\n signUpUserPostRequestAPI appside:', response);
-    //     if (response.success) {
-    //       // AsyncStorage.setItem("user_id", response);
-    //       AsyncStorage.setItem('id_token', route.params.password);
-    //       // AsyncStorage.setItem('alreadyLoggedIn', 'true');
-    //     } else {
-    //       Alert.alert('', response.msg);
-    //     }
-    //     // AsyncStorage.setItem(CHECK_LOGGED_IN_VALUE, 'true');
-    //     // AsyncStorage.setItem(
-    //     //   'LOGGED_IN_USER_DETAILS',
-    //     //   JSON.stringify(response.new_user),
-    //     // );
 
-    //   },
-    // );
+      // if()
+    });
+    // setLoading(false);
   };
 
-  var dataRes = {
-    success: true,
-    msg: 'registration successfull',
-    new_user: {
-      userName: 'ankit1996',
-      name: 'Ankit Jain',
-      location: {
-        lat: '85',
-        long: '25',
-      },
-      email: 'ajain.aj1996@gmail.com',
-      profession: 'Writer',
-      about_me: 'I am a writer',
-      age: parseInt(age),
-      state: 'Madhya Pradesh',
-      dob: {
-        month: 12,
-        year: 2021,
-        date: 12,
-      },
-      age_group: {
-        age_12_to_18: false,
-        age_19_to_32: false,
-        age_33_to_64: false,
-        age_65_to_100: true,
-      },
-      city: 'Jbp',
-      country: 'India',
-      gender: 'MALE',
-      password: '$2b$10$VbLuNxM1i8HPd3.w70hU3.XaB6ijoU8Q4HaDfgiR6/2QHSCWDToWC',
-      send_request: [],
-      get_request: [],
-      accepted_request: [],
-      _id: '61db0ca31eb9c4a8f9bd8f91',
-      __v: 0,
-    },
-  };
+  const takeImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+    });
+    console.log('this image from gallery \n\n\n\n\n', result.assets[0], '\n\n');
+    const {uri, fileName, type} = result.assets[0];
+    const image = {uri, name: fileName, type};
+    const data = new FormData();
+    data.append('file', image);
+    data.append('upload_preset', 'quinkpost');
+    data.append('cloud_name', 'Quink-Post');
+    console.log('before cloud post');
 
-  console.log('\n\n dataRes: ', dataRes.new_user._id);
+    fetch('https://api.cloudinary.com/v1_1/quink-post/image/upload', {
+      method: 'post',
+      body: data,
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data.secure_url, 'this is data from cloudinakdfj');
+        // setImage(data.url);
+        setDataToSend({...dataToSend, image: data.secure_url});
+      })
+      .catch(e => console.log(e, 'error from the n catch'));
+  };
+  const AddCoverImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+    });
+    console.log('this image from gallery \n\n\n\n\n', result.assets[0], '\n\n');
+    const {uri, fileName, type} = result.assets[0];
+    const image = {uri, name: fileName, type};
+    const data = new FormData();
+    data.append('file', image);
+    data.append('upload_preset', 'quinkpost');
+    data.append('cloud_name', 'Quink-Post');
+    console.log('before cloud post');
+
+    fetch('https://api.cloudinary.com/v1_1/quink-post/image/upload', {
+      method: 'post',
+      body: data,
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data.secure_url, 'this is data from cloudinakdfj');
+        // setImage(data.url);
+        setDataToSend({
+          ...dataToSend,
+          cover_images: [...dataToSend?.cover_images, data?.secure_url],
+        });
+      })
+      .catch(e => console.log(e, 'error from the n catch'));
+  };
 
   return (
     <View>
@@ -277,7 +248,7 @@ export default function EditProfileScreen({navigation}) {
                 <View style={{...styles.addProfileImageStyle}}>
                   <Image
                     // source={{ uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }}
-                    source={{uri: dataToSend.avatar}}
+                    source={{uri: dataToSend.image}}
                     style={{width: '100%', height: '100%', borderRadius: 100}}
                   />
                 </View>
@@ -301,7 +272,7 @@ export default function EditProfileScreen({navigation}) {
                     width={110}
                     height={36}
                     textColor={'#fff'}
-                    onPress={() => {}}
+                    onPress={takeImage}
                   />
                 </View>
               </View>
@@ -321,11 +292,12 @@ export default function EditProfileScreen({navigation}) {
                 // headingText="First Name"
                 // error={"emailError"}
                 labelValue={fname}
-                defaultValue={fname}
-                value={fname}
+                defaultValue={dataToSend.name}
+                value={dataToSend.name}
                 onChangeText={val => {
-                  setFName(val);
-                  setFNameError(false);
+                  // setFName(val);
+                  changeState('name', val);
+                  // setFNameError(false);
                 }}
               />
               {fnameError ? (
@@ -334,21 +306,6 @@ export default function EditProfileScreen({navigation}) {
                 <></>
               )}
 
-              <CustomInputComponent
-                placeholderText="Last Name"
-                iconType={require('../../assets/images/fname.png')}
-                // headingText="Last Name"
-                labelValue={lname}
-                onChangeText={val => {
-                  setLName(val);
-                  setLNameError(false);
-                }}
-              />
-              {lnameError ? (
-                <ErrorBlock text="Please enter your last name" />
-              ) : (
-                <></>
-              )}
               <View style={{height: 20}} />
 
               <CustomInputComponent
@@ -356,25 +313,25 @@ export default function EditProfileScreen({navigation}) {
                 iconType={require('../../assets/images/fname.png')}
                 // headingText="Username"
                 labelValue={username}
+                defaultValue={dataToSend.userName}
                 onChangeText={val => {
-                  setUsername(val);
-                  setUsernameError(false);
+                  // setUsername(val);
+                  // setUsernameError(false);
+                  changeState('userName', val);
                 }}
               />
-              {lnameError ? (
-                <ErrorBlock text="Please enter your last name" />
-              ) : (
-                <></>
-              )}
+
               <View style={{height: 20}} />
 
-              {CustomDropdownComponent(
+              {/* {CustomDropdownComponent(
                 'Your Profession',
                 yourProfessionList,
                 '100%',
                 50,
+              
                 require('../../assets/images/profession.png'),
                 selectedItem => {
+                  
                   console.log('\n selectedItem: ', selectedItem);
                   setProfession(selectedItem);
                   setProfessionError(false);
@@ -385,16 +342,18 @@ export default function EditProfileScreen({navigation}) {
                 <ErrorBlock text="Please enter your Profession" />
               ) : (
                 <></>
-              )}
+              )} */}
 
               <CustomInputComponent
                 placeholderText="About Me"
                 long={true}
                 // headingText="About Me"
                 labelValue={aboutMe}
+                defaultValue={dataToSend.about_me}
                 onChangeText={val => {
                   setAboutMe(val);
                   setAboutMeError(false);
+                  changeState('about_me', val);
                 }}
               />
               {aboutMeError ? (
@@ -403,6 +362,78 @@ export default function EditProfileScreen({navigation}) {
                 <></>
               )}
               <View style={{height: 20}} />
+              <View style={{height: 20}} />
+
+              <CustomButtonComponent
+                textColor={'#000'}
+                fw="normal"
+                text="Add Cover Images"
+                fs={14}
+                aself={'center'}
+                height={30}
+                textColor={'#fff'}
+                br={8}
+                onPress={AddCoverImage}
+                phor={10}
+              />
+              <View style={{height: 10}} />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-evenly',
+                  marginTop: 45,
+                }}>
+                {dataToSend?.cover_images?.map((item, key) => {
+                  return (
+                    <Image
+                      // source={require('../../assets/images/grocery.jpg')}
+                      source={{uri: item}}
+                      key={key}
+                      style={{
+                        width: 100,
+                        height: 100,
+                        margin: 3,
+                        borderColor: '#000',
+                        borderWidth: 2,
+                        borderRadius: 10,
+                      }}
+                    />
+                  );
+                })}
+                {/* <Image
+                  source={require('../../assets/images/grocery.jpg')}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    margin: 3,
+                    borderColor: '#000',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                  }}
+                />
+                <Image
+                  source={require('../../assets/images/grocery.jpg')}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    margin: 3,
+                    borderColor: '#000',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                  }}
+                />
+                <Image
+                  source={require('../../assets/images/grocery.jpg')}
+                  style={{
+                    width: 100,
+                    height: 100,
+                    margin: 3,
+                    borderColor: '#000',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                  }}
+                /> */}
+              </View>
 
               {/* {CustomDropdownComponent(
                 'Country',
@@ -424,7 +455,7 @@ export default function EditProfileScreen({navigation}) {
               )}
               <View style={{height: 20}} /> */}
 
-              {CustomDropdownComponent(
+              {/* {CustomDropdownComponent(
                 'State',
                 stateList,
                 '100%',
@@ -436,10 +467,10 @@ export default function EditProfileScreen({navigation}) {
                   setStateError(false);
                 },
                 state,
-              )}
-              {stateError ? <ErrorBlock text="Please select state" /> : <></>}
-              <View style={{height: 20}} />
-
+              )} */}
+              {/* {stateError ? <ErrorBlock text="Please select state" /> : <></>}
+              <View style={{height: 20}} /> */}
+              {/* 
               {CustomDropdownComponent(
                 'City',
                 cityList,
@@ -453,7 +484,7 @@ export default function EditProfileScreen({navigation}) {
                 },
                 city,
               )}
-              {cityError ? <ErrorBlock text="Please select city" /> : <></>}
+              {cityError ? <ErrorBlock text="Please select city" /> : <></>} */}
 
               {/* <TouchableOpacity
                 style={[styles.inputContainer, {paddingRight: 16}]}
@@ -474,20 +505,21 @@ export default function EditProfileScreen({navigation}) {
               </TouchableOpacity>
 
               {dobError ? <ErrorBlock text="Please select DOB" /> : <></>} */}
-              {/* <View style={{height: 20}} /> */}
+              {/* <View style={{height: 20}} />
               <CustomInputComponent
                 placeholderText="Age"
                 iconType={require('../../assets/images/fname.png')}
                 // headingText="Age"
                 // error={"emailError"}
+                defaultValue={dataToSend.age}
                 labelValue={age}
-                defaultValue={age}
+                defaultValue={55}
                 value={age}
                 onChangeText={val => {
                   setAge(val);
                   // setFNameError(false);
                 }}
-              />
+              /> */}
               {/* {CustomDropdownComponent(
                 'Age Group',
                 ageGroupList,
@@ -609,9 +641,7 @@ export default function EditProfileScreen({navigation}) {
                 height={46}
                 textColor={'#fff'}
                 br={8}
-                onPress={() => {
-                  handleClick();
-                }}
+                onPress={upDateProfile}
               />
               <View style={{height: 80}} />
             </View>

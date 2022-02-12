@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   ScrollView,
@@ -8,8 +8,11 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  TextInput,
 } from 'react-native';
 import {BACKEND} from '../Constants/ASYNC_STORAGE';
+import io from 'socket.io-client';
+
 import {Bubble, GiftedChat, Message, Send} from 'react-native-gifted-chat';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -19,22 +22,22 @@ import axios from 'axios';
 import CustomButtonComponent from '../components/CustomButtonComponent';
 import {Center} from 'native-base';
 import LinearGradient from 'react-native-linear-gradient';
+import {useSelector} from 'react-redux';
 
 const ChatScreen = ({navigation, route}) => {
-  //   const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState([]);
+  const [allMessages, setallMessages] = useState([]);
   const [userData, setUserData] = useState({});
-  //   const [messageId, setMessageId] = useState(null);
-  //   const [currUserData, setcurrUserData] = useState({});
   const {messageId, currUser, secondPerson} = route.params;
-  console.log('\t>>>>>>>>>>>\n\n', route.params);
+  const {logged_in_user_detail} = useState(state => state);
+  const socket = io(`${BACKEND}`);
+  const scrollViewRef = useRef();
 
   useEffect(() => {
-    console.log(
-      '>>>>>>>>>>>>> PARAMETER IN CHAT SCREEN\n\n\n ',
-      route.params,
-      '\n\n\n >>>>>>>>>>>>>>>>>>',
-    );
+    // console.log(
+    //   '>>>>>>>>>>>>> PARAMETER IN CHAT SCREEN\n\n\n ',
+    //   route.params,
+    //   '\n\n\n >>>>>>>>>>>>>>>>>>',
+    // );
     setUserData(route.params.item);
     // checkMessageId();
     fetchMessage();
@@ -44,85 +47,48 @@ const ChatScreen = ({navigation, route}) => {
     try {
       const {chat} = route.params.currUser;
       //   const findIt = await chat.find(item => item.secondPerson == userData._id);
-      const findIt = chat.map(item => {
-        if (item.secondPerson == userData._id) {
-          Alert.alert('find id');
-          setMessageId(item.message);
-        }
-      });
-
-      //   return findIt;
-      //   Alert.alert(`message ${findIt} 46`);
-      //   //   const findIt = chat.find(item => item.secondPerson == '001');
-      //   if (findIt != undefined) {
-      //     Alert.alert(`message not undefined`);
-      //     Alert.alert('messageid');
-      //     setMessageId(findIt.message);
-      //     return findIt.message;
-      //   } else {
-      //     Alert.alert('undefined 54');
-      //     return null;
+      // const findIt = chat.map(item => {
+      //   if (item.secondPerson == userData._id) {
+      //     Alert.alert('find id');
+      //     // setMessageId(item.message);
       //   }
+      // });
     } catch (e) {
       console.log(e);
     }
-
-    // console.log(
-    //   '\n\n>>>>>>>>>> chats>>>\n\n',
-    //   findIt,
-    //   '\n\n<<<<<<<<<<< chat \t\t',
-    //   findIt,
-    // );
   };
+  socket.on('initialMessage', data => {
+    console.log('\n\n\n\n\ninitial message \n\n>>>>>', data, '\n\n');
+    // setChatMessage(data);
+
+    setallMessages(data.message);
+  });
 
   const fetchMessage = async () => {
     try {
-      //   const msgId = await checkMessageId();
-      //   checkMessageId();
-      //   Alert.alert(`Fetched id msg ${msgId} 72`);
-      if (messageId != null) {
-        const {data} = await axios.get(
-          //   `${BACKEND}/message/all/${findIt.message}`,
-          `${BACKEND}/message/all/${messageId}`,
-        );
-
-        if (data.success) {
-          // setMessage(data);
-          console.log(
-            'message from backend>>>>>>>>>>>>>\n\n',
-            data.messages.message,
-            '<<<<<<<<, this is data',
-          );
-          setMessage(data.messages.message);
-        } else {
-          Alert.alert('Error while fetching messages !!!');
-        }
-      }
+      socket.emit('getPrivatePreviousChat', {
+        messageId,
+      });
     } catch (e) {
       console.log(e);
     }
   };
 
-  const onSend = async message => {
+  const onSend = async () => {
     try {
-      Alert.alert('sending in api');
+      // Alert.alert('sending in api');
       const dataToSend = {
         firstPerson: route.params.currUser._id,
         secondPerson: secondPerson._id,
-        message_id: messageId,
+        messageId: messageId,
         message: {
           receiver_id: secondPerson._id,
           sender_id: route.params.currUser._id,
-          text: 'First Message from akshay',
+          text: '325',
         },
       };
-      const {data} = await axios.post(`${BACKEND}/message/send`, dataToSend);
-      console.log(
-        '>>>>>>>>\n\n\n',
-        data,
-        '\n\n\n<<<<< after sending dta ato back',
-      );
-      Alert.alert(data.msg);
+      socket.emit('OneToOneChat', dataToSend);
+      // Alert.alert(data.msg);
     } catch (e) {
       console.log(e);
     }
@@ -160,28 +126,20 @@ const ChatScreen = ({navigation, route}) => {
       />
     );
   };
-
+  socket.on('messageFromOne', data => {
+    console.log(
+      '\n\n\n\n\n\n\n\n',
+      data.message.message,
+      '\n\n\n\n<<<<<< data form  from one>>>',
+      // allMessages[0],
+    );
+    setallMessages([...allMessages, data.message.message]);
+    // allMessages.push(data.message.message);
+    console.log(allMessages, '<<<< ALl messages');
+    // setallMessages([...allMessages, data.message.message]);
+  });
   const scrollToBottomComponent = () => {
     return <FontAwesome name="angle-double-down" size={22} color="#333" />;
-  };
-
-  const renderInputToolbar = props => {
-    return (
-      <View style={{paddingBottom: 40, marginTop: -24}}>
-        <CustomInputComponent
-          placeholderText="State"
-          iconType={require('../../assets/images/send.png')}
-          //   headingText="State"
-          labelValue={message}
-          onChangeText={val => {
-            setMessage(val);
-          }}
-          message={true}
-          {...props}
-        />
-        <View style={{height: 40}} />
-      </View>
-    );
   };
 
   return (
@@ -232,12 +190,33 @@ const ChatScreen = ({navigation, route}) => {
         </View>
         <View></View>
       </View>
-      <View>
+      <ScrollView
+        ref={scrollViewRef}
+        onContentSizeChange={() =>
+          scrollViewRef.current.scrollToEnd({animated: true})
+        }>
         {(() => {
-          return message?.map((item, key) => {
+          return allMessages?.map((item, key) => {
+            // console.log(item.sender_id, '\t', route.params.currUser._id);
             if (item.sender_id == route.params.currUser._id) {
               return (
-                <View style={{marginHorizontal: 5}}>
+                // <View
+                //   key={key}
+                //   style={{
+                //     backgroundColor: 'yellow',
+                //     maxWidth: '50%',
+                //     marginTop: 3,
+                //     borderRadius: 20,
+                //     padding: 7,
+                //   }}>
+                //   <CustomTextComponent
+                //     text={'item.text'}
+                //     fw="400"
+                //     fs={20}
+                //     color={'#000'}
+                //   />
+                // </View>
+                <View style={{marginHorizontal: 5}} key={key}>
                   <LinearGradient
                     colors={['#0073ff', '#0022ff']}
                     style={{
@@ -253,7 +232,7 @@ const ChatScreen = ({navigation, route}) => {
                       // borderBottomLeftRadius: 30,
                     }}>
                     <CustomTextComponent
-                      text={` Show this in right`}
+                      text={item?.text}
                       fw="500"
                       fs={17}
                       color={'#f7f7f7'}
@@ -262,14 +241,14 @@ const ChatScreen = ({navigation, route}) => {
                   <View
                     style={{
                       alignSelf: 'flex-end',
-                      width: 167.5,
+                      // width: 167.5,
                       marginBottom: 6,
                       backgroundColor: 'blue',
                       marginHorizontal: 0.2,
-                      paddingHorizontal: 4,
+                      paddingHorizontal: 8,
                       paddingBottom: 4,
                       borderBottomRightRadius: 15,
-                      borderBottomLeftRadius: 15,
+                      // borderBottomLeftRadius: 15,
                     }}>
                     <CustomTextComponent
                       text={`15 Jan 12:00`}
@@ -283,6 +262,18 @@ const ChatScreen = ({navigation, route}) => {
               );
             } else {
               return (
+                // <View
+                //   style={{
+                //     backgroundColor: 'green',
+                //     width: '20%',
+                //   }}>
+                //   <CustomTextComponent
+                //     text={'item.text'}
+                //     fw="400"
+                //     fs={20}
+                //     color={'#000'}
+                //   />
+                // </View>
                 <View style={{marginHorizontal: 5}}>
                   <LinearGradient
                     colors={['#fff', 'lightgrey']}
@@ -297,7 +288,7 @@ const ChatScreen = ({navigation, route}) => {
                       // borderBottomLeftRadius: 30,
                     }}>
                     <CustomTextComponent
-                      text={` Show this in right`}
+                      text={item?.text}
                       fw="500"
                       fs={17}
                       color={'#000'}
@@ -306,13 +297,13 @@ const ChatScreen = ({navigation, route}) => {
                   <View
                     style={{
                       alignSelf: 'flex-start',
-                      width: 167.5,
+                      // width: '100%',
                       marginBottom: 6,
                       backgroundColor: '#d9d9d9',
                       marginHorizontal: 0.2,
-                      paddingHorizontal: 4,
+                      paddingHorizontal: 8,
                       paddingBottom: 4,
-                      borderBottomRightRadius: 15,
+                      // borderBottomRightRadius: 15,
                       borderBottomLeftRadius: 15,
                     }}>
                     <CustomTextComponent
@@ -328,38 +319,35 @@ const ChatScreen = ({navigation, route}) => {
             }
           });
         })()}
-      </View>
-      {/* <GiftedChat
-        messages={messages}
-        onSend={messages => onSend(messages)}
-        user={{
-          _id: 1,
-        }}
-        textInputStyle={{color: '#000'}}
-        renderBubble={renderBubble}
-        alwaysShowSend
-        renderInputToolbar={renderInputToolbar}
-        renderSend={renderSend}
-        scrollToBottom
-        scrollToBottomComponent={scrollToBottomComponent}
-      /> */}
-      <TouchableOpacity style={{marginTop: 25}}>
+      </ScrollView>
+
+      <View
+        style={{flexDirection: 'row', paddingHorizontal: 5, marginBottom: 5}}>
+        <TextInput
+          placeholder="Write a Message"
+          style={{
+            borderRadius: 10,
+            borderColor: 'grey',
+            borderWidth: 1,
+            width: '78.5%',
+            marginRight: '1.5%',
+            paddingHorizontal: 15,
+          }}
+        />
         <CustomButtonComponent
           textColor={'#fff'}
           bw={0}
           bgColor={'maroon'}
           fw="normal"
-          text="Send Message"
+          text="Send "
           fs={14}
-          width="100%"
+          width="20%"
           height={50}
           br={8}
           bc={'#000'}
-          onPress={() => {
-            onSend('Message from akshay');
-          }}
+          onPress={onSend}
         />
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };

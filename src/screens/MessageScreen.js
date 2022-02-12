@@ -8,29 +8,45 @@ import {
   Alert,
 } from 'react-native';
 import CustomTextComponent from '../components/CustomTextComponent';
+import io from "socket.io-client";
+
 import {LOGGED_IN_USER_DETAILS} from '../Constants/ASYNC_STORAGE';
 import {HeaderComponent} from './HomeScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getSingleUserDatailFromAPI} from '../utils/API';
 import axios from 'axios';
 import {BACKEND} from '../Constants/ASYNC_STORAGE';
+import {useSelector} from 'react-redux';
 // import {Alert} from 'native-base';
 export default function MessageScreen({navigation, route}) {
+  const socket = io(`${BACKEND}`);
   const [connections, setConnections] = useState([]);
   const [currUser, setCurrUser] = useState([]);
+  const {logged_in_user_details} = useSelector(state => state);
   useEffect(() => {
     // setLoading(true);
+    // socket.emit("getPrivatePreviousChat", {
+    //   chatId: data.chatId,
+    //   sender: data.user1,
+    //   user2: data.user2,
+    // });
 
     (async () => {
-      const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
-      const parsed = JSON.parse(currUser);
-      setCurrUser(parsed);
-      console.log(parsed._id, '\n\n<<<<<<<<<<<<<<<<<<<<< curr user');
-      const {data} = await axios.get(`${BACKEND}/chat/members/${parsed._id}`);
+      // const currUser = await AsyncStorage.getItem(LOGGED_IN_USER_DETAILS);
+      // const parsed = JSON.parse(currUser);
+      Alert.alert('Sending');
+      setCurrUser(logged_in_user_details);
+      const {data} = await axios.get(
+        `${BACKEND}/chat/members/${logged_in_user_details._id}`,
+      );
+      console.log("\n\n\n\n--------------\n\n\n\n\n\n ",data,
+      "\n\n\n\n\n------------------------\n\n")
       if (data.success) {
         setConnections(data.chats.chat);
         Alert.alert('success');
         console.log(data.chats.chat);
+      } else {
+        Alert.alert('false');
       }
     })();
 
@@ -142,7 +158,7 @@ export default function MessageScreen({navigation, route}) {
                   navigation.navigate('ChatScreen', {
                     messageId: item.message,
                     secondPerson: item.secondPerson,
-                    currUser,
+                    currUser: logged_in_user_details,
                   });
                 }}
               />

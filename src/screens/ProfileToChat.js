@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import {BACKEND} from '../Constants/ASYNC_STORAGE';
+import io from 'socket.io-client';
 import {Bubble, GiftedChat, Message, Send} from 'react-native-gifted-chat';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -18,8 +19,9 @@ import CustomTextComponent from '../components/CustomTextComponent';
 import axios from 'axios';
 import CustomButtonComponent from '../components/CustomButtonComponent';
 import {Center} from 'native-base';
-
+import {useSelector,useDispatch} from "react-redux"
 const ProfileToChat = ({navigation, route}) => {
+  const {logged_in_user_details}=useSelector
   //   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState([]);
   const [userData, setUserData] = useState({});
@@ -27,6 +29,7 @@ const ProfileToChat = ({navigation, route}) => {
   //   const [currUserData, setcurrUserData] = useState({});
   const {currUser, secondPerson} = route.params;
   console.log('\t>>>>>>>>>>>\n\n', route.params);
+  const socket = io(`${BACKEND}`);
 
   useEffect(() => {
     console.log(
@@ -35,23 +38,70 @@ const ProfileToChat = ({navigation, route}) => {
       '\n\n\n >>>>>>>>>>>>>>>>>>',
     );
 
-    (async () => {
-      try {
-        const {data} = await axios.get(
-          `${BACKEND}/chat/message_id/${currUser._id}/${secondPerson._id}`,
-        );
-        setMessage(data.messages);
-        setMessageId(data.messageId);
-      } catch (e) {
-        console.log(e);
-      }
-    })();
+    // (async () => {
+    //   try {
+    //     const {data} = await axios.get(
+    //       `${BACKEND}/chat/message_id/${currUser._id}/${secondPerson._id}`,
+    //     );
+    //     setMessage(data.messages);
+    //     setMessageId(data.messageId);
+    //   } catch (e) {
+    //     console.log(e);
+    //   }
+    // })();
+    fetchMessage();
 
     // setUserData(route.params.item);
     // checkMessageId();
     // fetchMessage();
   }, []);
 
+  socket.on('initialMessage', data => {
+    console.log('\n\n\n\n\ninitial message \n\n>>>>>', data, '\n\n');
+    // setChatMessage(data);
+
+    setallMessages(data.message);
+  });
+  // const fetchMessage = async () => {
+  //   try {
+  //     socket.emit('getPrivatePreviousChat', {
+  //       messageId,
+  //     });
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+  // const onSend = async () => {
+  //   try {
+  //     // Alert.alert('sending in api');
+  //     const dataToSend = {
+  //       firstPerson: route.params.currUser._id,
+  //       secondPerson: secondPerson._id,
+  //       messageId: messageId,
+  //       message: {
+  //         receiver_id: secondPerson._id,
+  //         sender_id: route.params.currUser._id,
+  //         text: '325',
+  //       },
+  //     };
+  //     socket.emit('OneToOneChat', dataToSend);
+  //     // Alert.alert(data.msg);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+  socket.on('messageFromOne', data => {
+    console.log(
+      '\n\n\n\n\n\n\n\n',
+      data.message.message,
+      '\n\n\n\n<<<<<< data form  from one>>>',
+      // allMessages[0],
+    );
+    setallMessages([...allMessages, data.message.message]);
+    // allMessages.push(data.message.message);
+    console.log(allMessages, '<<<< ALl messages');
+    // setallMessages([...allMessages, data.message.message]);
+  });
   const checkMessageId = () => {
     try {
       const {chat} = route.params.currUser;
@@ -94,10 +144,19 @@ const ProfileToChat = ({navigation, route}) => {
       console.log(e);
     }
   };
-
+  // socket.on('messageFromOne', data => {
+  //   // setChatMessage([...ChatMessage, data.message]);
+  //   console.log(data, '<<<< data form message from one');
+  // });
   const onSend = async message => {
     Alert.alert(messageId);
+
     try {
+      socket.emit('OneToOneChat', {
+        messageId,
+        message,
+      });
+
       Alert.alert('sending in api');
       const dataToSend = {
         firstPerson: route.params.currUser._id,

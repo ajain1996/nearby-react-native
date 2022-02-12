@@ -52,6 +52,34 @@ export default function ProfileDetailScreen({navigation, route}, props) {
       }
     });
   }, []);
+
+  const onAddFriendPress = () => {
+    if (showRequestLoader.text == 'Message') {
+      return navigation.navigate('ProfileDetailToMessageScreen', {
+        messageId: 'FIND_IT',
+        secondPerson: usersData,
+        currUser: currUserData,
+      });
+    } else if (showRequestLoader.text == 'Send Request') {
+      setLoading(true);
+
+      return sendUserRequestPostRequestAPI(
+        currUserData?._id,
+        otherUserData?.user_id,
+        response => {
+          if (response.success) {
+            Alert.alert('Request Sent');
+            navigation.navigate('HomeScreen');
+          }
+          // console.log(
+          //   '\n\n sendUserRequestPostRequestAPI response: ',
+          //   response,
+          // );
+          setLoading(false);
+        },
+      );
+    }
+  };
   const checkRequestButtonText = async (accepted_request, get_request) => {
     try {
       // const {accepted_request, get_request} = usersData;
@@ -128,21 +156,24 @@ export default function ProfileDetailScreen({navigation, route}, props) {
             style={{
               backgroundColor: '#0073ff',
               paddingVertical: 10,
-              paddingHorizontal: 35,
+              paddingHorizontal: 25,
               borderRadius: 10,
-            }}>
-            <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
-              Add Friend
+              // width: '45%',
+            }}
+            onPress={onAddFriendPress}>
+            <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>
+              {showRequestLoader.text}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={{
               backgroundColor: '#0073ff',
               paddingVertical: 10,
-              paddingHorizontal: 35,
+              paddingHorizontal: 25,
               borderRadius: 10,
+              // width: '45%',
             }}>
-            <Text style={{fontWeight: 'bold', fontSize: 20, color: '#fff'}}>
+            <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>
               Share Profile
             </Text>
           </TouchableOpacity>
@@ -159,9 +190,9 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               width: SIZES.width / 3.4,
               height: SIZES.width / 3.4,
               margin: 3,
-              borderColor: "#000",
+              borderColor: '#000',
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
             }}
           />
           <Image
@@ -170,9 +201,9 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               width: SIZES.width / 3.4,
               height: SIZES.width / 3.4,
               margin: 3,
-              borderColor: "#000",
+              borderColor: '#000',
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
             }}
           />
           <Image
@@ -181,9 +212,9 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               width: SIZES.width / 3.4,
               height: SIZES.width / 3.4,
               margin: 3,
-              borderColor: "#000",
+              borderColor: '#000',
               borderWidth: 2,
-              borderRadius: 10
+              borderRadius: 10,
             }}
           />
         </View>
@@ -193,49 +224,6 @@ export default function ProfileDetailScreen({navigation, route}, props) {
         style={{elevation: 8, shadowColor: '#999', backgroundColor: '#fff'}}>
         <View style={{padding: 16, width: '100%'}}>
           {/* {showRequestLoader.text=="Message"?} */}
-          <CustomButtonComponent
-            textColor={'#fff'}
-            bw={0}
-            bgColor={'maroon'}
-            fw="normal"
-            text={showRequestLoader.text}
-            fs={14}
-            width="100%"
-            height={50}
-            br={8}
-            bc={'#000'}
-            onPress={() => {
-              {
-                (() => {
-                  if (showRequestLoader.text == 'Message') {
-                    return navigation.navigate('ProfileDetailToMessageScreen', {
-                      messageId: 'FIND_IT',
-                      secondPerson: usersData,
-                      currUser: currUserData,
-                    });
-                  } else if (showRequestLoader.text == 'Send Request') {
-                    setLoading(true);
-
-                    return sendUserRequestPostRequestAPI(
-                      currUserData?._id,
-                      otherUserData?.user_id,
-                      response => {
-                        if (response.success) {
-                          Alert.alert('Request Sent');
-                          navigation.navigate('HomeScreen');
-                        }
-                        // console.log(
-                        //   '\n\n sendUserRequestPostRequestAPI response: ',
-                        //   response,
-                        // );
-                        setLoading(false);
-                      },
-                    );
-                  }
-                })();
-              }
-            }}
-          />
         </View>
       </View>
     </View>
@@ -252,17 +240,17 @@ const renderProfileInfoComponent = usersData => {
             justifyContent: 'flex-end',
             alignItems: 'center',
           }}>
-          <Image
-            source={{uri: usersData.avatar}}
+          {/* <Image
+            source={{uri: usersData.image}}
             style={{width: 24, height: 24}}
-          />
-          <View style={{width: 5}} />
-          <CustomTextComponent
+          /> */}
+          {/* <View style={{width: 5}} /> */}
+          {/* <CustomTextComponent
             text={`${usersData?.age} years`}
             fw="400"
             fs={20}
             color={'#000'}
-          />
+          /> */}
         </View>
 
         <View
@@ -280,7 +268,7 @@ const renderProfileInfoComponent = usersData => {
             }}>
             <Image
               source={require('../../assets/images/profile.png')}
-              // source={usersData?.avatar}
+              source={{uri: usersData?.image}}
               style={{width: '100%', height: '100%'}}
             />
           </View>
@@ -310,6 +298,14 @@ const renderProfileInfoComponent = usersData => {
                 color={'#000'}
               />
             </View>
+            <View style={{height: 5}} />
+            <CustomTextComponent
+              text={`${usersData?.age} years`}
+              fw="400"
+              fs={18}
+              color={'#000'}
+              textAlign={'center'}
+            />
             <View
               style={{
                 flexDirection: 'row',

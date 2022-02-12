@@ -11,6 +11,8 @@ import {
   Alert,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import CustomInputComponent from '../components/CustomInputComponent';
 import CustomTextComponent from '../components/CustomTextComponent';
@@ -26,11 +28,19 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {signUpUserPostRequestAPI} from '../utils/API';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import {BACKEND} from '../Constants/ASYNC_STORAGE';
+import {
+  BACKEND,
+  ASYNC_LOGGED_IN_USER_DETAILS,
+} from '../Constants/ASYNC_STORAGE';
+import Geolocation from '@react-native-community/geolocation';
+import {useDispatch} from 'react-redux';
+import {IS_USER_LOGGED_IN, LOGGED_IN_USER_DETAIL} from '../Reducer/Action';
+import {handleImageCloud} from '../components/CloudinaryImage';
+
 export default function RegisterScreen({navigation, route}) {
   // const {dataToSend}=route.params
   const [dataToSend, setDataToSend] = useState({});
-  // console.log(route.params,"<<<<<<<<<<<<<<<<<<<<<  THIS IS DATA TO SEND")
+  console.log(route.params, '<<<<<<<<<<<<<<<<<<<<<  THIS IS DATA TO SEND');
   const [fnameError, setFNameError] = useState(false);
   const [lnameError, setLNameError] = useState(false);
   const [usernameError, setUsernameError] = useState(false);
@@ -43,8 +53,9 @@ export default function RegisterScreen({navigation, route}) {
   const [genderError, setGenderError] = useState(false);
   const [dobError, setDobError] = useState(false);
 
-  const [fname, setFName] = useState(route?.dataToSend?.firstName);
-  const [lname, setLName] = useState(route?.dataToSend?.lastName);
+  const [fname, setFName] = useState(route.params?.dataToSend?.firstName);
+  const [lname, setLName] = useState(route.params?.dataToSend?.lastName);
+  const [userImage, setuserImage] = useState(route.params?.dataToSend?.avatar);
   const [username, setUsername] = useState('');
   const [profession, setProfession] = useState('');
   const [aboutMe, setAboutMe] = useState('');
@@ -57,7 +68,7 @@ export default function RegisterScreen({navigation, route}) {
 
   const [date, setDate] = useState(new Date(1598051730000));
   const [showDatePicker, setShowdatePicker] = useState(false);
-
+  const [loc, setloc] = useState({lat: null, lon: null});
   const [loading, setLoading] = useState(false);
 
   const onChange = (event, selectedDate) => {
@@ -83,9 +94,18 @@ export default function RegisterScreen({navigation, route}) {
   const cityList = ['Mumbai', 'Jabalpur', 'Nagpur', 'Malburn', 'Vascodigama'];
 
   const stateList = ['MP', 'UP', 'Delhi', 'Uttrakhand', 'Indiana'];
-
+  const dispatch = useDispatch();
   useEffect(() => {
-    setDataToSend(route.params.dataToSend);
+    setLoading(true);
+    Geolocation.getCurrentPosition(info => {
+      // console.log(info);
+      const {longitude, latitude} = info.coords;
+      console.log(latitude, longitude);
+      setloc({lon: longitude, lat: latitude});
+    });
+    setLoading(false);
+
+    // setDataToSend(route.params.dataToSend);
   }, []);
 
   const renderdatePicker = () => {
@@ -105,41 +125,38 @@ export default function RegisterScreen({navigation, route}) {
   };
 
   const handleClick = () => {
-    var fullname = fname + ' ' + lname;
-    var email = dataToSend.email;
-    var password = dataToSend.password;
-    // console.log(
-    //   email.trim(),
-    //   password,
-    //   fullname,
-    //   username,
-    //   age,
-    //   city,
-    //   country,
-    //   aboutMe,
-    //   gender,
-    //   state,
-    //   profession,
-    // )
+    var fullname =
+      route.params?.dataToSend?.firstName +
+      ' ' +
+      route.params?.dataToSend?.lastName;
+    var email = route.params?.dataToSend?.email;
+    var password = route.params?.dataToSend?.password;
+    var image = route.params?.dataToSend?.avatar;
     setLoading(true);
     const signup = async () => {
       try {
         const bodyData = {
-          email: dataToSend.email,
+          email: email,
           userName: username,
-          password: dataToSend.password,
-          name: `${dataToSend.firstName} ${dataToSend.lastName}`,
+          password: password,
+          name: fullname,
           age: age,
           city: city,
           profession: profession,
           country: country,
-          location: {lat: '23.233623', long: '79.961582'},
-
+          // location: {lat: '23.233623', long: '79.961582'},
+          image: image,
           about_me: aboutMe,
           gender: gender,
           state: state,
           dob: {month: 12, year: 2021, date: 12},
+          location_3: {coordinates: [loc.lon, loc.lat]},
         };
+        console.log(
+          '-----------------------------------------\n\n\n\n',
+          bodyData,
+          '-----------------------------------------\n\n\n\n\n\n\n\n\n\n--------------------------------------body data',
+        );
         const {data} = await axios.post(`${BACKEND}/auth/signup`, bodyData);
         console.log(
           '\n\n>>>>>>>>>>> Data signup>>>>>>>>>>',
@@ -150,51 +167,46 @@ export default function RegisterScreen({navigation, route}) {
           Alert.alert(data.msg);
           // Alert.alert('Check Input fields');
           AsyncStorage.setItem('CHECK_LOGGED_IN_VALUE', 'true');
+          dispatch({type: IS_USER_LOGGED_IN, payload: true});
+
           AsyncStorage.setItem(
-            'LOGGED_IN_USER_DETAILS',
+            ASYNC_LOGGED_IN_USER_DETAILS,
             JSON.stringify(data.new_user),
           );
+          dispatch({type: LOGGED_IN_USER_DETAIL, payload: data.new_user});
           navigation.replace('Tabs');
         } else {
           Alert.alert('Check Input Fields');
           AsyncStorage.setItem('CHECK_LOGGED_IN_VALUE', 'false');
-          AsyncStorage.setItem('LOGGED_IN_USER_DETAILS', 'null');
+          dispatch({type: IS_USER_LOGGED_IN, payload: false});
+          AsyncStorage.setItem(ASYNC_LOGGED_IN_USER_DETAILS, 'null');
+          dispatch({type: LOGGED_IN_USER_DETAIL, payload: null});
+          setLoading(false);
         }
       } catch (e) {
-        console.log(e);
+        console.log(e, '\n\n\n <<<< this is error  183');
       }
     };
     signup();
-    // signUpUserPostRequestAPI(
-    //   email.trim(),
-    //   password,
-    //   fullname,
-    //   username,
-    //   age,
-    //   city,
-    //   country,
-    //   aboutMe,
-    //   gender,
-    //   state,
-    //   profession,
-    //   response => {
-    //     setLoading(false);
-    //     console.log('\n\n signUpUserPostRequestAPI appside:', response);
-    //     if (response.success) {
-    //       // AsyncStorage.setItem("user_id", response);
-    //       AsyncStorage.setItem('id_token', route.params.password);
-    //       // AsyncStorage.setItem('alreadyLoggedIn', 'true');
-    //     } else {
-    //       Alert.alert('', response.msg);
-    //     }
-    //     // AsyncStorage.setItem(CHECK_LOGGED_IN_VALUE, 'true');
-    //     // AsyncStorage.setItem(
-    //     //   'LOGGED_IN_USER_DETAILS',
-    //     //   JSON.stringify(response.new_user),
-    //     // );
+  };
 
-    //   },
-    // );
+  const takeImage = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+    });
+    console.log(result.assets[0]);
+    const {uri, fileName} = result.assets[0];
+    setuserImage(uri);
+    // handleImageCloud(fileName, res => {
+    //   console.log(
+    //     'image\n\n\n\n--------------',
+    //     fileName,
+    //     '\n\n',
+    //     // setuserImage
+    //     res,
+    //     '\n\n\n\n----------',
+    //   );
+    // });
   };
 
   var dataRes = {
@@ -277,7 +289,7 @@ export default function RegisterScreen({navigation, route}) {
                 <View style={{...styles.addProfileImageStyle}}>
                   <Image
                     // source={{ uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }}
-                    source={{uri: dataToSend.avatar}}
+                    source={{uri: userImage}}
                     style={{width: '100%', height: '100%', borderRadius: 100}}
                   />
                 </View>
@@ -301,7 +313,7 @@ export default function RegisterScreen({navigation, route}) {
                     width={110}
                     height={36}
                     textColor={'#fff'}
-                    onPress={() => {}}
+                    onPress={takeImage}
                   />
                 </View>
               </View>
