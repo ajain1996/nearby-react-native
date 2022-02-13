@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   Alert,
+  TextInput,
 } from 'react-native';
 import {BACKEND} from '../Constants/ASYNC_STORAGE';
 import io from 'socket.io-client';
@@ -20,6 +21,7 @@ import CustomTextComponent from '../components/CustomTextComponent';
 import axios from 'axios';
 import CustomButtonComponent from '../components/CustomButtonComponent';
 import {Center} from 'native-base';
+import LinearGradient from 'react-native-linear-gradient';
 import {useSelector} from 'react-redux';
 
 const ChatScreen = ({navigation, route}) => {
@@ -28,6 +30,7 @@ const ChatScreen = ({navigation, route}) => {
   const {messageId, currUser, secondPerson} = route.params;
   const {logged_in_user_detail} = useState(state => state);
   const socket = io(`${BACKEND}`);
+  const scrollViewRef = useRef();
 
   useEffect(() => {
     // console.log(
@@ -57,7 +60,7 @@ const ChatScreen = ({navigation, route}) => {
   socket.on('initialMessage', data => {
     console.log('\n\n\n\n\ninitial message \n\n>>>>>', data, '\n\n');
     // setChatMessage(data);
-    
+
     setallMessages(data.message);
   });
 
@@ -144,6 +147,7 @@ const ChatScreen = ({navigation, route}) => {
       <View
         style={{
           height: 52,
+          marginBottom: 15,
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -186,47 +190,130 @@ const ChatScreen = ({navigation, route}) => {
         </View>
         <View></View>
       </View>
-      <ScrollView>
+      <ScrollView
+        ref={scrollViewRef}
+        onContentSizeChange={() =>
+          scrollViewRef.current.scrollToEnd({animated: true})
+        }>
         {(() => {
           return allMessages?.map((item, key) => {
             // console.log(item.sender_id, '\t', route.params.currUser._id);
             if (item.sender_id == route.params.currUser._id) {
               return (
-                <View
-                  key={key}
-                  style={{
-                    backgroundColor: 'yellow',
-                    // width: '40%',
-
-                    maxWidth: '50%',
-                    marginTop: 3,
-                    borderRadius: 20,
-                    padding: 7,
-                    // justifyContent: 'end',
-                    // alignItems: 'end',
-                  }}>
-                  <CustomTextComponent
-                    text={item.text}
-                    fw="400"
-                    fs={20}
-                    color={'#000'}
-                  />
+                // <View
+                //   key={key}
+                //   style={{
+                //     backgroundColor: 'yellow',
+                //     maxWidth: '50%',
+                //     marginTop: 3,
+                //     borderRadius: 20,
+                //     padding: 7,
+                //   }}>
+                //   <CustomTextComponent
+                //     text={'item.text'}
+                //     fw="400"
+                //     fs={20}
+                //     color={'#000'}
+                //   />
+                // </View>
+                <View style={{marginHorizontal: 5}} key={key}>
+                  <LinearGradient
+                    colors={['#0073ff', '#0022ff']}
+                    style={{
+                      // backgroundColor: 'green',
+                      // width: '80%',
+                      alignSelf: 'flex-end',
+                      paddingHorizontal: 15,
+                      paddingVertical: 5,
+                      paddingVertical: 2,
+                      // borderRadius: 30
+                      borderTopLeftRadius: 15,
+                      borderTopRightRadius: 15,
+                      // borderBottomLeftRadius: 30,
+                    }}>
+                    <CustomTextComponent
+                      text={item?.text}
+                      fw="500"
+                      fs={17}
+                      color={'#f7f7f7'}
+                    />
+                  </LinearGradient>
+                  <View
+                    style={{
+                      alignSelf: 'flex-end',
+                      // width: 167.5,
+                      marginBottom: 6,
+                      backgroundColor: 'blue',
+                      marginHorizontal: 0.2,
+                      paddingHorizontal: 8,
+                      paddingBottom: 4,
+                      borderBottomRightRadius: 15,
+                      // borderBottomLeftRadius: 15,
+                    }}>
+                    <CustomTextComponent
+                      text={`15 Jan 12:00`}
+                      fw="400"
+                      fs={12}
+                      textAlign="right"
+                      color={'rgba(255,255,255,0.5)'}
+                    />
+                  </View>
                 </View>
               );
             } else {
               return (
-                <View
-                  style={{
-                    backgroundColor: 'green',
-                    width: '20%',
-                    // alignItems: 'center',
-                  }}>
-                  <CustomTextComponent
-                    text={item.text}
-                    fw="400"
-                    fs={20}
-                    color={'#000'}
-                  />
+                // <View
+                //   style={{
+                //     backgroundColor: 'green',
+                //     width: '20%',
+                //   }}>
+                //   <CustomTextComponent
+                //     text={'item.text'}
+                //     fw="400"
+                //     fs={20}
+                //     color={'#000'}
+                //   />
+                // </View>
+                <View style={{marginHorizontal: 5}}>
+                  <LinearGradient
+                    colors={['#fff', 'lightgrey']}
+                    style={{
+                      alignSelf: 'flex-start',
+                      paddingHorizontal: 15,
+                      paddingVertical: 5,
+                      paddingVertical: 2,
+                      // borderRadius: 30
+                      borderTopLeftRadius: 15,
+                      borderTopRightRadius: 15,
+                      // borderBottomLeftRadius: 30,
+                    }}>
+                    <CustomTextComponent
+                      text={item?.text}
+                      fw="500"
+                      fs={17}
+                      color={'#000'}
+                    />
+                  </LinearGradient>
+                  <View
+                    style={{
+                      alignSelf: 'flex-start',
+                      // width: '100%',
+                      marginBottom: 6,
+                      backgroundColor: '#d9d9d9',
+                      marginHorizontal: 0.2,
+                      paddingHorizontal: 8,
+                      paddingBottom: 4,
+                      // borderBottomRightRadius: 15,
+                      borderBottomLeftRadius: 15,
+                    }}>
+                    <CustomTextComponent
+                      text={`15 Jan 12:00`}
+                      fw="400"
+                      fs={12}
+                      textAlign="right"
+                      color={'rgba(0,0,0,0.4)'}
+                    />
+                  </View>
                 </View>
               );
             }
@@ -234,21 +321,33 @@ const ChatScreen = ({navigation, route}) => {
         })()}
       </ScrollView>
 
-      <TouchableOpacity>
+      <View
+        style={{flexDirection: 'row', paddingHorizontal: 5, marginBottom: 5}}>
+        <TextInput
+          placeholder="Write a Message"
+          style={{
+            borderRadius: 10,
+            borderColor: 'grey',
+            borderWidth: 1,
+            width: '78.5%',
+            marginRight: '1.5%',
+            paddingHorizontal: 15,
+          }}
+        />
         <CustomButtonComponent
           textColor={'#fff'}
           bw={0}
           bgColor={'maroon'}
           fw="normal"
-          text="Send Message"
+          text="Send "
           fs={14}
-          width="100%"
+          width="20%"
           height={50}
           br={8}
           bc={'#000'}
           onPress={onSend}
         />
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };

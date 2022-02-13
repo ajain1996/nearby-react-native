@@ -103,7 +103,7 @@ export default function SearchScreen({navigation}) {
             style={{
               backgroundColor: showNewReq ? '#0073ff' : '#BEBEBE',
               paddingVertical: 13,
-              width: '45%',
+              // width: '45%',
               paddingHorizontal: 25,
               alignContent: 'center',
               flexDirection: 'row',
@@ -124,7 +124,7 @@ export default function SearchScreen({navigation}) {
               paddingVertical: 13,
               paddingHorizontal: 25,
               borderRadius: 10,
-              width: '45%',
+              // width: '45%',
             }}
             onPress={() => setShowNewReq(false)}>
             <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>

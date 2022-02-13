@@ -62,34 +62,34 @@ const ProfileToChat = ({navigation, route}) => {
 
     setallMessages(data.message);
   });
-  const fetchMessage = async () => {
-    try {
-      socket.emit('getPrivatePreviousChat', {
-        messageId,
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  const onSend = async () => {
-    try {
-      // Alert.alert('sending in api');
-      const dataToSend = {
-        firstPerson: route.params.currUser._id,
-        secondPerson: secondPerson._id,
-        messageId: messageId,
-        message: {
-          receiver_id: secondPerson._id,
-          sender_id: route.params.currUser._id,
-          text: '325',
-        },
-      };
-      socket.emit('OneToOneChat', dataToSend);
-      // Alert.alert(data.msg);
-    } catch (e) {
-      console.log(e);
-    }
-  };
+  // const fetchMessage = async () => {
+  //   try {
+  //     socket.emit('getPrivatePreviousChat', {
+  //       messageId,
+  //     });
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+  // const onSend = async () => {
+  //   try {
+  //     // Alert.alert('sending in api');
+  //     const dataToSend = {
+  //       firstPerson: route.params.currUser._id,
+  //       secondPerson: secondPerson._id,
+  //       messageId: messageId,
+  //       message: {
+  //         receiver_id: secondPerson._id,
+  //         sender_id: route.params.currUser._id,
+  //         text: '325',
+  //       },
+  //     };
+  //     socket.emit('OneToOneChat', dataToSend);
+  //     // Alert.alert(data.msg);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
   socket.on('messageFromOne', data => {
     console.log(
       '\n\n\n\n\n\n\n\n',

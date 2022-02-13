@@ -522,7 +522,6 @@ const GroceryCardComponent = ({
         // }}
       >
         <Image
-          // source={require('../../assets/images/grocery.jpg')}
           source={{uri: image}}
           style={{
             width: SIZES.width / 3.3,

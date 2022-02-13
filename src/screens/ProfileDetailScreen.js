@@ -158,7 +158,7 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               paddingVertical: 10,
               paddingHorizontal: 25,
               borderRadius: 10,
-              width: '45%',
+              // width: '45%',
             }}
             onPress={onAddFriendPress}>
             <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>
@@ -171,7 +171,7 @@ export default function ProfileDetailScreen({navigation, route}, props) {
               paddingVertical: 10,
               paddingHorizontal: 25,
               borderRadius: 10,
-              width: '45%',
+              // width: '45%',
             }}>
             <Text style={{fontWeight: 'bold', fontSize: 17, color: '#fff'}}>
               Share Profile
@@ -240,17 +240,17 @@ const renderProfileInfoComponent = usersData => {
             justifyContent: 'flex-end',
             alignItems: 'center',
           }}>
-          <Image
+          {/* <Image
             source={{uri: usersData.image}}
             style={{width: 24, height: 24}}
-          />
-          <View style={{width: 5}} />
-          <CustomTextComponent
+          /> */}
+          {/* <View style={{width: 5}} /> */}
+          {/* <CustomTextComponent
             text={`${usersData?.age} years`}
             fw="400"
             fs={20}
             color={'#000'}
-          />
+          /> */}
         </View>
 
         <View
@@ -298,6 +298,14 @@ const renderProfileInfoComponent = usersData => {
                 color={'#000'}
               />
             </View>
+            <View style={{height: 5}} />
+            <CustomTextComponent
+              text={`${usersData?.age} years`}
+              fw="400"
+              fs={18}
+              color={'#000'}
+              textAlign={'center'}
+            />
             <View
               style={{
                 flexDirection: 'row',

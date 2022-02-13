@@ -369,12 +369,12 @@ export default function EditProfileScreen({navigation}) {
                 fw="normal"
                 text="Add Cover Images"
                 fs={14}
-                width="50%"
-                
+                aself={'center'}
                 height={30}
                 textColor={'#fff'}
                 br={8}
                 onPress={AddCoverImage}
+                phor={10}
               />
               <View style={{height: 10}} />
               <View
